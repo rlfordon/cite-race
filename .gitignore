@@ -1,0 +1,15 @@
+# Bulk data and derived caches (gigabytes); the static build in docs/ is what ships.
+data/
+!data/prototype/starters.json
+*.pickle
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+# Reference images are personal scrapbook material, not part of the app.
+night lights/
+highway maps/
+case law/
+*.jpg
+*.webp

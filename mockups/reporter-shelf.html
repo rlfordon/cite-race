@@ -1,0 +1,185 @@
+<title>Reporter Shelf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: a photocopied page. One shelf of volumes across the top carries the whole trail;
+   two alternative trails below for comparison. Single look by choice: white paper, black toner, two pens. */
+:root {
+  --paper: #ffffff;
+  --toner: #111111;
+  --grey: #6b6b6b;
+  --spine: #b9b9b9;
+  --spine-dark: #8a8a8a;
+  --pen: #1f3fbf;     /* blue ballpoint */
+  --red: #c8201c;     /* red pen */
+  --serif: 'Old Standard TT', 'Times New Roman', Times, serif;
+  color-scheme: light;
+}
+body { background: var(--paper); color: var(--toner); font-family: var(--serif); font-size: 15px; line-height: 1.45;
+  margin: 0; padding-block: 28px 64px; padding-inline: 16px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 36px; }
+header { display: grid; gap: 4px; max-width: 66ch; }
+h1 { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: 0.01em; }
+h2 { font-size: 15px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 0.06em; }
+p { margin: 0; }
+.muted { color: var(--grey); }
+section { display: grid; gap: 10px; }
+.scroll { overflow-x: auto; max-width: 100%; }
+svg { display: block; width: 100%; height: auto; min-width: 760px; }
+.pen { color: var(--pen); }
+.red { color: var(--red); }
+.strip { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: baseline; font-size: 14px; }
+.strip .head { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.strip .cite { white-space: nowrap; }
+.strip .arrow { font-style: italic; white-space: nowrap; }
+.strip .arrow.pen { text-decoration: underline; text-decoration-color: var(--pen); text-underline-offset: 3px; }
+table { border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+td, th { text-align: left; padding: 3px 14px 3px 0; vertical-align: top; }
+th { font-weight: 700; border-bottom: 1px solid var(--toner); }
+.back { color: var(--pen); font-style: italic; }
+.fwd { color: var(--pen); font-style: italic; }
+figure { margin: 0; display: grid; gap: 8px; }
+figcaption { font-size: 14px; color: var(--grey); max-width: 72ch; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Reporter Shelf</h1>
+    <p>The trail laid out on the shelf of United States Reports instead of in click order. Volumes only increase with time, so a hop to the left is a hop into the past and a hop to the right is a hop forward through the cases that cite you. Blue pen is the player, red pen is Jev. Same puzzle in all three views: start at Shady Grove, reach Klaxon.</p>
+  </header>
+
+  <section>
+    <h2>A. The shelf</h2>
+    <figure>
+      <div class="scroll"><svg id="shelf" viewBox="0 0 1200 420" role="img" aria-label="Shelf of U.S. Reports volumes with the player's path drawn in blue and Jev's in red"></svg></div>
+      <figcaption>Each pulled volume is a case you opened. Pen string runs from volume to volume in hop order; the number sits on the string. Player above the shelf, Jev below. Distance along the shelf is how far in time the hop took you.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>B. Running heads in click order, with the direction written in</h2>
+    <figure>
+      <div class="strip">
+        <span class="head">Shady Grove v. Allstate</span><span class="cite">559 U.S. 393 (2010)</span>
+        <span class="arrow pen">cites, 45 years back</span>
+        <span class="head">Hanna v. Plumer</span><span class="cite">380 U.S. 460 (1965)</span>
+        <span class="arrow pen">cites, 27 years back</span>
+        <span class="head">Erie R. Co. v. Tompkins</span><span class="cite">304 U.S. 64 (1938)</span>
+        <span class="arrow pen">cited by, 3 years forward</span>
+        <span class="head">Klaxon Co. v. Stentor</span><span class="cite">313 U.S. 487 (1941)</span>
+      </div>
+      <figcaption>Cheapest to build. Direction is readable but you have to read it; nothing shows at a glance that the whole trip went back twice and forward once.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>C. The trail as a table of authorities with a year column</h2>
+    <figure>
+      <table>
+        <thead><tr><th>Hop</th><th>Authority</th><th>Decided</th><th>Direction</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>Shady Grove Orthopedic Assocs. v. Allstate Ins. Co., 559 U.S. 393</td><td>2010</td><td class="muted">start</td></tr>
+          <tr><td>1</td><td>Hanna v. Plumer, 380 U.S. 460</td><td>1965</td><td class="back">back 45 years</td></tr>
+          <tr><td>2</td><td>Erie R. Co. v. Tompkins, 304 U.S. 64</td><td>1938</td><td class="back">back 27 years</td></tr>
+          <tr><td>3</td><td>Klaxon Co. v. Stentor Elec. Mfg. Co., 313 U.S. 487</td><td>1941</td><td class="fwd">forward 3 years</td></tr>
+        </tbody>
+      </table>
+      <figcaption>The end-of-game record. Reads like the front of a brief and could be printed. Fine for the replay, too slow for play.</figcaption>
+    </figure>
+  </section>
+</div>
+
+<script>
+(function () {
+  const svg = document.getElementById('shelf');
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a, parent) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); (parent || svg).appendChild(e); return e; };
+
+  // Shelf geometry: volumes 1 to 600 across the width.
+  const x0 = 40, x1 = 1160, VOLS = 600, shelfY = 250, spineH = 70;
+  const xOf = v => x0 + (v - 1) / (VOLS - 1) * (x1 - x0);
+
+  // Shelf board and spines, photocopy grey.
+  el('rect', { x: x0 - 10, y: shelfY, width: x1 - x0 + 20, height: 6, fill: '#111' });
+  for (let v = 1; v <= VOLS; v++) {
+    const x = xOf(v), w = (x1 - x0) / VOLS * 0.78;
+    // West buckram in greyscale: a lighter spine with two darker bands.
+    el('rect', { x: x - w / 2, y: shelfY - spineH, width: w, height: spineH, fill: v % 7 === 0 ? '#a9a9a9' : '#bdbdbd' });
+    el('rect', { x: x - w / 2, y: shelfY - spineH + 8, width: w, height: 6, fill: '#777' });
+    el('rect', { x: x - w / 2, y: shelfY - 20, width: w, height: 6, fill: '#777' });
+  }
+  // Year ticks under the shelf, at the volume where that year begins (approximate).
+  const ticks = [[1, '1790'], [60, '1850'], [100, '1879'], [200, '1906'], [300, '1937'], [400, '1971'], [500, '1991'], [560, '2010'], [600, '2020']];
+  ticks.forEach(([v, y]) => {
+    el('line', { x1: xOf(v), y1: shelfY + 6, x2: xOf(v), y2: shelfY + 14, stroke: '#111', 'stroke-width': 1 });
+    const t = el('text', { x: xOf(v), y: shelfY + 30, 'text-anchor': 'middle', 'font-size': 12, fill: '#6b6b6b', 'font-family': 'Old Standard TT, Times New Roman, serif' }); t.textContent = y;
+  });
+  const vl = el('text', { x: x0, y: shelfY + 50, 'font-size': 12, fill: '#6b6b6b', 'font-family': 'Old Standard TT, Times New Roman, serif' }); vl.textContent = 'Volume 1';
+  const vr = el('text', { x: x1, y: shelfY + 50, 'text-anchor': 'end', 'font-size': 12, fill: '#6b6b6b', 'font-family': 'Old Standard TT, Times New Roman, serif' }); vr.textContent = 'Volume 600';
+
+  // The cases in play.
+  const cases = {
+    shady:   { v: 559, name: 'Shady Grove v. Allstate', cite: '559 U.S. 393', year: 2010 },
+    hanna:   { v: 380, name: 'Hanna v. Plumer', cite: '380 U.S. 460', year: 1965 },
+    erie:    { v: 304, name: 'Erie R. Co. v. Tompkins', cite: '304 U.S. 64', year: 1938 },
+    klaxon:  { v: 313, name: 'Klaxon v. Stentor', cite: '313 U.S. 487', year: 1941 },
+    gasper:  { v: 518, name: 'Gasperini v. Center for Humanities', cite: '518 U.S. 415', year: 1996 },
+  };
+  const player = ['shady', 'hanna', 'erie', 'klaxon'];
+  const jev = ['shady', 'gasper', 'erie', 'klaxon'];
+
+  // Pulled volumes: drawn taller and darker, labelled above (player) with name and cite.
+  const pulled = new Set([...player, ...jev]);
+  const labelSlots = {}; // avoid label collisions by alternating heights for near neighbours
+  [...pulled].map(k => cases[k]).sort((a, b) => a.v - b.v).forEach((c, i, arr) => {
+    const x = xOf(c.v), w = (x1 - x0) / VOLS * 0.78 + 1.5;
+    el('rect', { x: x - w / 2, y: shelfY - spineH - 14, width: w, height: spineH + 14, fill: '#555' });
+    el('rect', { x: x - w / 2, y: shelfY - spineH - 6, width: w, height: 6, fill: '#222' });
+    const prev = arr[i - 1]; const crowded = prev && (x - xOf(prev.v)) < 110;
+    labelSlots[c.v] = crowded && !labelSlots[prev.v + '_hi'] ? 2 : 1; if (labelSlots[c.v] === 2) labelSlots[c.v + '_hi'] = true;
+  });
+
+  // Pen string: quadratic arc between consecutive pulled volumes. Above for player, below for Jev.
+  function arc(x1_, x2_, yBase, up, colour, dashed) {
+    const d = Math.abs(x2_ - x1_), h = Math.min(150, 40 + d * 0.28);
+    const cy = up ? yBase - h : yBase + h;
+    // Slight hand wobble on the control point so it reads as pen, not vector.
+    const cx = (x1_ + x2_) / 2 + (up ? 6 : -6);
+    const p = el('path', { d: `M ${x1_} ${yBase} Q ${cx} ${cy} ${x2_} ${yBase}`, fill: 'none', stroke: colour, 'stroke-width': 2.2, 'stroke-linecap': 'round' });
+    if (dashed) p.setAttribute('stroke-dasharray', '7 5');
+    // Arrowhead at the destination pointing along the arc.
+    const dir = x2_ > x1_ ? 1 : -1;
+    el('path', { d: `M ${x2_ - dir * 9} ${yBase + (up ? -9 : 9)} L ${x2_} ${yBase} L ${x2_ - dir * 11} ${yBase + (up ? 2 : -2)}`, fill: 'none', stroke: colour, 'stroke-width': 2.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    return { apexX: (x1_ + 2 * cx + x2_) / 4, apexY: (yBase + 2 * cy + yBase) / 4 };
+  }
+  function drawPath(keys, up, colour, dashed, who) {
+    for (let i = 0; i < keys.length - 1; i++) {
+      const a = cases[keys[i]], b = cases[keys[i + 1]];
+      const yBase = up ? shelfY - spineH - 16 : shelfY + 58;
+      const { apexX, apexY } = arc(xOf(a.v), xOf(b.v), yBase, up, colour, dashed);
+      const back = b.v < a.v;
+      const t = el('text', { x: apexX, y: apexY + (up ? -6 : 16), 'text-anchor': 'middle', 'font-size': 14, 'font-style': 'italic', fill: colour, 'font-family': 'Old Standard TT, Times New Roman, serif' });
+      t.textContent = `${i + 1}  ${back ? 'back' : 'forward'} ${Math.abs(b.year - a.year)} yrs`;
+    }
+    // Who is who, written in the pen at the start.
+    const s = cases[keys[0]];
+    const t = el('text', { x: xOf(s.v) + 10, y: up ? shelfY - spineH - 22 : shelfY + 76, 'font-size': 13, 'font-style': 'italic', fill: colour, 'font-family': 'Old Standard TT, Times New Roman, serif' });
+    t.textContent = who;
+  }
+  drawPath(jev, false, '#c8201c', true, 'Jev');
+  drawPath(player, true, '#1f3fbf', false, 'you');
+
+  // Labels: case name and cite above the player's arcs, stacked where crowded.
+  [...pulled].map(k => cases[k]).sort((a, b) => a.v - b.v).forEach(c => {
+    const x = xOf(c.v), slot = labelSlots[c.v] || 1, y = 48 - (slot - 1) * 0 + (slot === 2 ? -26 : 0);
+    const anchor = c.v > 540 ? 'end' : c.v < 60 ? 'start' : 'middle';
+    const n = el('text', { x, y, 'text-anchor': anchor, 'font-size': 14, 'font-weight': 700, fill: '#111', 'font-family': 'Old Standard TT, Times New Roman, serif', 'letter-spacing': '0.03em' }); n.textContent = c.name.toUpperCase();
+    const cc = el('text', { x, y: y + 16, 'text-anchor': anchor, 'font-size': 13, fill: '#111', 'font-family': 'Old Standard TT, Times New Roman, serif' }); cc.textContent = `${c.cite} (${c.year})`;
+    // Leader from label to the volume top.
+    el('line', { x1: x, y1: y + 22, x2: x, y2: shelfY - spineH - 16, stroke: '#111', 'stroke-width': 0.8, 'stroke-dasharray': '2 3' });
+  });
+
+  // Start and target, stamped.
+  const stamp = (k, text) => { const c = cases[k]; const t = el('text', { x: xOf(c.v), y: shelfY + 88, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#111', 'font-family': 'Old Standard TT, Times New Roman, serif', 'letter-spacing': '0.1em' }); t.textContent = text; };
+  stamp('shady', 'START'); stamp('klaxon', 'TARGET');
+})();
+</script>

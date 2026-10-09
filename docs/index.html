@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Citation Race</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: the play screen. Ladder sidebar on the left (time across, hops down), reporter page on the right.
+   Single look by choice: white paper, black toner, two pens. */
+:root {
+  --paper: #ffffff;
+  --toner: #111111;
+  --grey: #6b6b6b;
+  --rule: #cfcfcf;
+  --pen: #1f3fbf;
+  --red: #c8201c;
+  --serif: 'Old Standard TT', 'Times New Roman', Times, serif;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--toner); font-family: var(--serif); font-size: 15px; line-height: 1.42;
+  margin: 0; padding-block: 20px 60px; padding-inline: 16px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 36px; }
+.wrap.docketing { grid-template-columns: minmax(0, 1fr); }
+aside { display: grid; gap: 10px; align-content: start; align-self: start; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+h2 { font-size: 13px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 0.08em; }
+.score { font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--toner); padding-bottom: 4px; font-variant-numeric: tabular-nums; }
+svg { display: block; width: 100%; height: auto; }
+.hint { font-size: 13px; color: var(--grey); margin: 0; }
+.pen { color: var(--pen); }
+.red { color: var(--red); }
+.target { font-size: 14px; border-top: 1px solid var(--rule); padding-top: 6px; display: grid; gap: 2px; }
+.target b { display: block; }
+.tbtn { border: none; padding: 0; text-align: left; background: none; display: grid; }
+.tbtn:hover b { text-decoration: underline; text-decoration-color: var(--pen); text-underline-offset: 3px; }
+dialog#peek { border: 2px solid var(--toner); padding: 16px 20px; max-width: min(72ch, calc(100vw - 32px)); width: 100%; max-height: 80vh; color: var(--toner); background: var(--paper); font-family: var(--serif); }
+dialog#peek::backdrop { background: rgba(0,0,0,0.35); }
+.peekhead { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--toner); padding-bottom: 4px; margin-bottom: 10px; }
+.peekhead button { font-size: 13px; padding: 2px 8px; }
+.peekbody { font-size: 14.5px; display: grid; gap: 6px; }
+.peekbody .caption { margin-block: 0 6px; }
+.peekbody .caption .party { font-size: 15px; }
+.peekbody p { margin: 0; text-indent: 1.4em; text-align: justify; hyphens: auto; }
+.peekbody p.syllabus { text-indent: 0; font-size: 13.5px; }
+.peekbody .more { color: var(--grey); font-style: italic; text-indent: 0; }
+.peekbody a.cite { border-bottom: none; cursor: text; }
+button, input { font: inherit; font-size: 14px; color: var(--toner); background: var(--paper); border: 1px solid var(--toner); padding: 4px 10px; }
+button { cursor: pointer; }
+button:hover { background: #f1f1f1; }
+button:focus-visible, input:focus-visible, a.cite:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* Start screen. */
+/* Start screen: a docket. One table, one click. */
+.start { display: grid; gap: 18px; max-width: 86ch; margin: 0 auto; }
+.start h1 { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: 0.02em; text-align: center; }
+.start .lede { max-width: 64ch; margin: 0 auto; text-align: center; }
+.dir { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; justify-content: center; font-size: 14px; border-top: 1px solid var(--toner); border-bottom: 1px solid var(--toner); padding-block: 8px; }
+.dir .k { font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; }
+.dir label { cursor: pointer; }
+.dir input { position: absolute; opacity: 0; width: 0; height: 0; }
+.dir input:checked + span { text-decoration: underline; text-decoration-color: var(--pen); text-decoration-thickness: 2px; text-underline-offset: 4px; font-weight: 700; }
+.dir input:focus-visible + span { outline: 2px solid var(--pen); outline-offset: 3px; }
+.dir .hint { flex-basis: 100%; text-align: center; }
+.docket { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.docket th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 2px solid var(--toner); padding: 4px 10px 6px 0; }
+.docket td { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+.docket td.no { color: var(--grey); width: 3em; }
+.docket td.par { width: 3em; text-align: right; padding-right: 0; }
+.docket td.theme { color: var(--grey); font-style: italic; }
+.docket tr.grp td { border-bottom: 1px solid var(--toner); padding-top: 18px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--toner); }
+.docket tr.pick { cursor: pointer; }
+.docket tr.pick:hover td, .docket tr.pick:focus-within td { background: #f3f3f3; }
+.docket tr.pick:hover td.from, .docket tr.pick:hover td.to { text-decoration: underline; text-decoration-color: var(--pen); text-underline-offset: 3px; }
+.docket tr.pick small { color: var(--grey); white-space: nowrap; }
+.docket tr.random td { padding-top: 14px; }
+.docket tr.random .from { font-style: italic; }
+.docket td.loading { color: var(--grey); font-style: italic; }
+@media (max-width: 720px) { .docket th:nth-child(4), .docket td.theme { display: none; } }
+
+/* The reporter page. */
+main { min-width: 0; display: grid; gap: 14px; align-content: start; }
+.runhead { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; border-bottom: 1px solid var(--toner); padding-bottom: 3px; }
+.runhead span { min-width: 0; overflow-wrap: anywhere; }
+.citeas { text-align: center; font-size: 12px; color: var(--grey); }
+.caption { text-align: center; display: grid; gap: 2px; margin-block: 6px; }
+.caption .party { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; }
+.caption .v { font-style: italic; }
+.caption .dates { font-size: 13px; }
+/* One reporter page at a time: the opinion flows into fixed-height columns, two per page, and the
+   box clips to one page; turning a page slides the column strip left by one page width. */
+.pagebox { overflow: hidden; position: relative; --gap: 28px; --ph: clamp(400px, 50vh, 720px); }
+#opinion { height: var(--ph); column-count: 2; column-gap: var(--gap); column-fill: auto; column-rule: 1px solid var(--rule);
+  text-align: justify; hyphens: auto; will-change: transform; }
+#opinion .page-label { font-size: 10px; color: var(--grey); vertical-align: super; line-height: 0; }
+#opinion .syllabus { font-size: 13.5px; text-indent: 0; margin-left: 1em; }
+#opinion .author { font-variant: small-caps; text-indent: 0; }
+.caption .summary { font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; }
+.caption .docketnumber, .caption .otherdate, .caption .decisiondate { font-size: 13px; display: inline; margin: 0 0.4em; }
+.pagenav { display: flex; justify-content: center; align-items: baseline; gap: 18px; font-size: 13px; border-top: 1px solid var(--toner); padding-top: 6px; font-variant-numeric: tabular-nums; }
+.pagenav button { border: none; padding: 2px 6px; font-size: 14px; }
+.pagenav button:disabled { color: var(--rule); cursor: default; background: none; }
+#opinion p { margin: 0 0 0.6em; text-indent: 1.6em; }
+#opinion h1, #opinion h2, #opinion h3, #opinion h4 { font-size: 15px; font-weight: 700; margin: 0.8em 0 0.4em; text-transform: none; letter-spacing: 0; break-after: avoid; }
+#opinion .footnote, #opinion aside, #opinion blockquote { font-size: 13px; margin: 0 0 0.6em 1em; }
+#opinion img { max-width: 100%; }
+a.cite { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--grey); cursor: pointer; }
+a.cite:hover { border-bottom: 2px solid var(--pen); }
+a.cite.taken { border-bottom: 2px solid var(--pen); }
+a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
+/* The citator strip under the page: two tabs and one set of filters. */
+.citator { display: grid; gap: 8px; border-top: 2px solid var(--toner); padding-top: 8px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
+.tabs button { border: none; padding: 0 0 2px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: none; border-bottom: 2px solid transparent; }
+.tabs button[aria-selected="true"] { border-bottom-color: var(--toner); }
+.tabs .filters { margin-left: auto; }
+.list { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.list ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 14px; height: 26vh; min-height: 90px; overflow: auto; align-content: start; }
+.list li { display: flex; gap: 10px; font-variant-numeric: tabular-nums; align-items: baseline; }
+.list li .yr { color: var(--grey); width: 3em; flex: none; }
+.list li .n { color: var(--grey); margin-left: auto; flex: none; font-size: 12px; }
+.off { opacity: 0.45; }
+.off a.cite { cursor: not-allowed; border-bottom-style: dashed; }
+#opinion.off a.cite:hover { border-bottom: 1px dashed var(--grey); }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+.filters input[type=number] { width: 5.5em; }
+.filters input[type=search] { width: 11em; }
+.done { border: 2px solid var(--pen); padding: 10px 14px; font-size: 14px; display: grid; gap: 6px; }
+.done ol { margin: 0; padding-left: 1.4em; }
+.loading { color: var(--grey); font-style: italic; }
+.err { color: var(--red); }
+[hidden] { display: none !important; }
+@media (max-width: 820px) {
+  .wrap { grid-template-columns: 1fr; gap: 24px; }
+  aside { position: static; max-height: none; }
+  #opinion { column-count: 1; }
+  .pagebox { --ph: 70vh; }
+  .tabs .filters { margin-left: 0; }
+}
+</style>
+</head>
+<body data-static="1">
+<dialog id="peek">
+  <div class="peekhead"><span>About the target</span><button type="button" id="peekClose" aria-label="Close">Close</button></div>
+  <div class="peekbody" id="peekBody"></div>
+  <p class="hint">Syllabus and opening paragraphs only. Its citations stay hidden, so the route is yours to find.</p>
+</dialog>
+<div class="wrap">
+  <aside id="side" hidden>
+    <h2>Your trail</h2>
+    <div class="score"><span>Hop <b id="hopN">0</b>, par <span id="parN">–</span></span><span id="clock">00:00</span></div>
+    <svg id="ladder" viewBox="0 0 300 10" role="img" aria-label="Trail of cases, time across and hops down"></svg>
+    <div class="target"><span class="hint">Target</span><button type="button" class="tbtn" id="btnTarget"><b id="targetName">–</b><span id="targetCite" class="hint"></span></button><span class="hint">Click to read about it.</span></div>
+    <p class="hint">Time runs left to right. Each hop is a row. <span class="pen">Blue</span> is you, <span class="red">red</span> is Jev. You both move at once, so Jev's hop appears only after yours; hover a red dot for its case. The dashed line is the target's year. Click a row to return to that case.</p>
+    <div class="done" id="done" hidden></div>
+    <div class="row"><button id="btnNew">Back to the docket</button></div>
+  </aside>
+
+  <main id="main">
+    <div class="start" id="start">
+      <h1>Citation Race</h1>
+      <p class="lede">Get from one Supreme Court case to another by following citations. A citation in the opinion takes you back in time; the cited-by list takes you forward. Fewest hops wins, and Jev races you on the same puzzle. Pick a case from the docket to begin.</p>
+      <div class="dir" role="radiogroup" aria-label="Direction">
+        <span class="k">Direction</span>
+        <label><input type="radio" name="mode" value="any" checked><span>Either way</span></label>
+        <label><input type="radio" name="mode" value="back"><span>Back in time only</span></label>
+        <label><input type="radio" name="mode" value="forward"><span>Forward in time only</span></label>
+        <span class="hint" id="modeHint"></span>
+      </div>
+      <table class="docket" id="docket">
+        <thead><tr><th>No.</th><th>From</th><th>To</th><th>Theme</th><th>Par</th></tr></thead>
+        <tbody><tr><td colspan="5" class="loading">Calling the docket…</td></tr></tbody>
+      </table>
+    </div>
+    <div id="page" hidden>
+      <div class="runhead"><span id="rhName"></span><span id="rhCite"></span></div>
+      <div class="citeas" id="citeas"></div>
+      <div class="caption" id="caption"></div>
+      <div class="pagebox"><div class="opinion" id="opinion"></div></div>
+      <div class="pagenav">
+        <button id="pgPrev" aria-label="Previous page">&#8249; Previous</button>
+        <span>Page <span id="pgN">1</span> of <span id="pgT">1</span></span>
+        <button id="pgNext" aria-label="Next page">Next &#8250;</button>
+      </div>
+      <div class="citator">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="tabCites" aria-selected="false">Cites, <span id="citesN">0</span></button>
+          <button role="tab" id="tabCited" aria-selected="true">Cited by, <span id="citedN">0</span></button>
+          <div class="filters">
+            <label>Years <input id="fFrom" type="number" placeholder="from"></label>
+            <label><input id="fTo" type="number" placeholder="to"></label>
+            <label>Word <input id="fWord" type="search" placeholder="in case name"></label>
+          </div>
+        </div>
+        <div class="list" id="panelCites" hidden>
+          <p class="hint">Cases this opinion cites. Clicking goes back in time.</p>
+          <ul id="citesList"></ul>
+        </div>
+        <div class="list" id="panelCited">
+          <p class="hint">Later cases that cite this one, most-cited first. Clicking goes forward in time.</p>
+          <ul id="citedList"></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="static-api.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  // On GitHub Pages there is no server: static-api.js answers the same calls from shipped data and the archive.
+  const api = async (path) => {
+    if (window.StaticApi && window.StaticApi.enabled) return window.StaticApi.call(path);
+    const r = await fetch(path); if (!r.ok) throw new Error(`${path}: ${r.status}`); return r.json();
+  };
+
+  const state = { puzzle: null, player: [], jev: [], cases: {}, t0: null, finished: false, timer: null, mode: 'any', page: 0, pages: 1 };
+  const modeOf = () => (document.querySelector('input[name=mode]:checked') || {}).value || 'any';
+  const modeHints = {
+    any: 'Either direction: follow a citation in the text to go back, or pick from the cited-by list to go forward.',
+    back: 'Back only: you may follow citations in the opinion, so every hop goes to an older case. The cited-by list is closed.',
+    forward: 'Forward only: you may pick from the cited-by list, so every hop goes to a newer case. Citations in the text are closed.',
+  };
+  function applyMode() {
+    const m = state.mode;
+    $('opinion').classList.toggle('off', m === 'forward');
+    $('panelCites').classList.toggle('off', m === 'forward');
+    $('panelCited').classList.toggle('off', m === 'back');
+    showTab(m === 'back' ? 'cites' : 'cited');
+  }
+  const allowed = a => {
+    if (state.mode === 'any') return true;
+    const inCitedBy = !!a.closest('#citedList');
+    return state.mode === 'forward' ? inCitedBy : !inCitedBy;
+  };
+
+  // Ladder.
+  const svg = $('ladder'), NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); (p || svg).appendChild(e); return e; };
+  const text = (x, y, s, a) => { const t = el('text', Object.assign({ x, y, 'font-family': 'Old Standard TT, Times New Roman, serif', 'font-size': 12, fill: '#111' }, a)); t.textContent = s; return t; };
+  const W = 300, L = 18, R = 288, Y0 = 1789, Y1 = 2026, ROW = 46, TOP = 38;
+  const xOf = y => L + (y - Y0) / (Y1 - Y0) * (R - L);
+  const shortName = n => n.name.length > 30 ? n.name.slice(0, 28) + '…' : n.name;
+
+  function renderLadder() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const player = state.player, jev = state.jev.slice(0, player.length);
+    const rows = Math.max(1, player.length) + 1, H = TOP + rows * ROW + 10;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    el('line', { x1: L, y1: 22, x2: R, y2: 22, stroke: '#111', 'stroke-width': 1 });
+    [1800, 1850, 1900, 1950, 2000].forEach(y => {
+      el('line', { x1: xOf(y), y1: 22, x2: xOf(y), y2: 27, stroke: '#111', 'stroke-width': 1 });
+      text(xOf(y), 16, String(y), { 'text-anchor': 'middle', 'font-size': 11, fill: '#6b6b6b' });
+    });
+    for (let y = 1800; y <= 2020; y += 50) el('line', { x1: xOf(y), y1: 27, x2: xOf(y), y2: H - 6, stroke: '#e6e6e6', 'stroke-width': 1 });
+    if (state.puzzle) {
+      const tx = xOf(state.puzzle.target.year);
+      el('line', { x1: tx, y1: 27, x2: tx, y2: H - 6, stroke: '#111', 'stroke-width': 1, 'stroke-dasharray': '3 4' });
+      text(tx + 4, H - 8, 'target ' + state.puzzle.target.year, { 'font-size': 11, 'font-style': 'italic', fill: '#111' });
+    }
+    const rowY = i => TOP + i * ROW + 10;
+    function trail(keys, colour, dashed, dy) {
+      for (let i = 0; i < keys.length - 1; i++) {
+        const a = keys[i], b = keys[i + 1], x1 = xOf(a.year), x2 = xOf(b.year), y1 = rowY(i) + dy, y2 = rowY(i + 1) + dy;
+        const p = el('path', { d: `M ${x1} ${y1} L ${x2} ${y2}`, stroke: colour, 'stroke-width': 2, fill: 'none', 'stroke-linecap': 'round' });
+        if (dashed) p.setAttribute('stroke-dasharray', '6 4');
+        const ang = Math.atan2(y2 - y1, x2 - x1), ah = 7;
+        el('path', { d: `M ${x2 - ah * Math.cos(ang - 0.5)} ${y2 - ah * Math.sin(ang - 0.5)} L ${x2} ${y2} L ${x2 - ah * Math.cos(ang + 0.5)} ${y2 - ah * Math.sin(ang + 0.5)}`, stroke: colour, 'stroke-width': 2, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+      }
+      keys.forEach((c, i) => {
+        const x = xOf(c.year), y = rowY(i) + dy;
+        const dot = el('circle', { cx: x, cy: y, r: dashed ? 5 : 4, fill: i === keys.length - 1 && !dashed ? colour : '#fff', stroke: colour, 'stroke-width': 2 });
+        if (dashed) { dot.setAttribute('style', 'cursor:help'); const t = el('title', {}, dot); t.textContent = `Jev, hop ${i}: ${c.name} (${c.year})`; }
+      });
+    }
+    player.forEach((c, i) => {
+      const x = xOf(c.year), y = rowY(i);
+      text(4, y + 4, String(i), { 'font-size': 11, fill: '#6b6b6b' });
+      // Put the label on whichever side has more room and cut it to fit that room.
+      const roomR = W - x - 14, roomL = x - 14, right = roomR >= roomL, chars = Math.max(10, Math.floor((right ? roomR : roomL) / 6.4));
+      const label = c.name.length > chars ? c.name.slice(0, chars - 1) + '…' : c.name, lx = right ? x + 10 : x - 10;
+      text(lx, y - 7, label, { 'text-anchor': right ? 'start' : 'end', 'font-weight': i === player.length - 1 ? 700 : 400 });
+      text(lx, y + 7, String(c.year) + (i === 0 ? ', start' : i === player.length - 1 ? ', here' : ''), { 'text-anchor': right ? 'start' : 'end', 'font-size': 11, fill: '#6b6b6b' });
+      const hit = el('rect', { x: 0, y: y - 18, width: W, height: ROW - 10, fill: 'transparent', style: 'cursor:pointer' });
+      hit.addEventListener('click', () => { if (!state.finished && i < player.length - 1) goBack(i); });
+    });
+    trail(jev, '#c8201c', true, 6);
+    trail(player, '#1f3fbf', false, 0);
+    $('hopN').textContent = String(Math.max(0, player.length - 1));
+  }
+
+  // Page.
+  function renderCase(c) {
+    const parts = c.name.split(/\s+v\.\s+/);
+    $('rhName').textContent = c.name.toUpperCase(); $('rhCite').textContent = c.cite || '';
+    $('citeas').textContent = c.cite ? `Cite as ${c.cite} (${c.year})` : `${c.year}`;
+    const cap = $('caption'); cap.innerHTML = '';
+    if (parts.length === 2) {
+      cap.innerHTML = `<div class="party"></div><div class="v">v.</div><div class="party"></div><div class="dates"></div>`;
+      cap.children[0].textContent = parts[0].toUpperCase(); cap.children[2].textContent = parts[1].toUpperCase();
+    } else { cap.innerHTML = `<div class="party"></div><div class="dates"></div>`; cap.children[0].textContent = c.name.toUpperCase(); }
+    cap.lastElementChild.textContent = c.date ? `Decided ${c.date}.` : String(c.year);
+    const op = $('opinion'); op.innerHTML = c.html || '<p class="hint">No text available for this opinion in the prototype.</p>';
+    op.querySelectorAll('script,style,link,iframe').forEach(n => n.remove());
+    // The reporter's own head matter (parties, court, docket, dates) becomes the caption; the syllabus stays in the columns.
+    const head = op.querySelector('.head-matter');
+    if (head) {
+      // Keep only short head-matter lines: parties, the court line, docket and dates. Long "summary" paragraphs are the statement of facts and stay in the columns.
+      const keep = [...head.children].filter(n => !n.classList.contains('syllabus') && (n.classList.contains('parties') || n.textContent.trim().length < 140));
+      if (keep.some(n => n.classList.contains('parties'))) { cap.innerHTML = ''; keep.forEach(n => cap.appendChild(n)); }
+      cap.querySelectorAll('.parties').forEach(n => n.classList.add('party'));
+    }
+    markTaken();
+    state.page = 0; layoutPages();
+    renderLists();
+  }
+
+  // Pagination: the column strip is wider than the box; a page is two columns, so one page width
+  // is the box width plus one gap. Turning a page translates the strip.
+  function pageWidth() { const box = $('opinion').parentElement; return box.clientWidth + parseFloat(getComputedStyle(box).getPropertyValue('--gap')) || box.clientWidth; }
+  function layoutPages() {
+    const op = $('opinion'); op.style.transform = 'none';
+    // Count pages from where the text actually ends: a sentinel after the last node, measured on screen.
+    let s = op.querySelector('.pg-end'); if (!s) { s = document.createElement('span'); s.className = 'pg-end'; op.appendChild(s); }
+    const pw = pageWidth(), box = op.parentElement.getBoundingClientRect(), end = s.getBoundingClientRect();
+    const total = Math.max(1, Math.floor((end.left - box.left) / pw) + 1);
+    state.pages = total; state.page = Math.min(state.page || 0, total - 1);
+    showPage();
+  }
+  function showPage() {
+    const op = $('opinion'); op.style.transform = `translateX(${-state.page * pageWidth()}px)`;
+    $('pgN').textContent = String(state.page + 1); $('pgT').textContent = String(state.pages || 1);
+    $('pgPrev').disabled = state.page <= 0; $('pgNext').disabled = state.page >= (state.pages || 1) - 1;
+  }
+  function turn(d) { const n = state.page + d; if (n < 0 || n >= (state.pages || 1)) return; state.page = n; showPage(); }
+  window.addEventListener('resize', () => { if (!$('page').hidden) layoutPages(); });
+  document.fonts && document.fonts.ready.then(() => { if (!$('page').hidden) layoutPages(); });
+  $('pgPrev').addEventListener('click', () => turn(-1)); $('pgNext').addEventListener('click', () => turn(1));
+  document.addEventListener('keydown', e => {
+    if ($('page').hidden || e.target.matches('input')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { turn(1); e.preventDefault(); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { turn(-1); e.preventDefault(); }
+  });
+
+  // Citator tabs.
+  function showTab(which) {
+    $('tabCites').setAttribute('aria-selected', String(which === 'cites')); $('tabCited').setAttribute('aria-selected', String(which === 'cited'));
+    $('panelCites').hidden = which !== 'cites'; $('panelCited').hidden = which !== 'cited';
+  }
+  $('tabCites').addEventListener('click', () => showTab('cites')); $('tabCited').addEventListener('click', () => showTab('cited'));
+  function passes(n) {
+    const from = +$('fFrom').value || 0, to = +$('fTo').value || 9999, word = $('fWord').value.trim().toLowerCase();
+    return n.year >= from && n.year <= to && (!word || n.name.toLowerCase().includes(word));
+  }
+  function renderLists() {
+    const c = state.cases[current().id]; if (!c) return;
+    const cites = c.cites.filter(passes), cited = c.cited_by.filter(passes);
+    $('citesN').textContent = cites.length === c.cites.length ? String(c.cites.length) : `${cites.length} of ${c.cites.length}`;
+    $('citedN').textContent = cited.length === c.cited_by.length ? String(c.cited_by.length) : `${cited.length} of ${c.cited_by.length}`;
+    const ul1 = $('citesList'); ul1.innerHTML = ''; cites.forEach(n => ul1.appendChild(li(n)));
+    const ul2 = $('citedList'); ul2.innerHTML = ''; cited.forEach(n => ul2.appendChild(li(n)));
+    markTaken();
+  }
+  function li(n) {
+    const item = document.createElement('li');
+    const yr = document.createElement('span'); yr.className = 'yr'; yr.textContent = String(n.year);
+    const a = document.createElement('a'); a.className = 'cite' + (n.has_text ? '' : ' notext'); a.dataset.id = n.id; a.href = '#'; a.textContent = n.cite ? `${n.name}, ${n.cite}` : n.name;
+    if (!n.has_text) a.title = 'No text in the prototype yet';
+    const cnt = document.createElement('span'); cnt.className = 'n'; cnt.textContent = n.cited_all ? `${n.cited_all.toLocaleString()} citing` : '';
+    item.append(yr, a, cnt); return item;
+  }
+  function markTaken() {
+    const taken = new Set(state.player.map(n => String(n.id)));
+    document.querySelectorAll('a.cite').forEach(a => a.classList.toggle('taken', taken.has(a.dataset.id)));
+  }
+  const current = () => state.player[state.player.length - 1];
+
+  async function loadCase(id) {
+    if (state.cases[id]) return state.cases[id];
+    const c = await api(`/api/case/${id}`); state.cases[id] = c; return c;
+  }
+
+  async function hop(id) {
+    if (state.finished) return;
+    const cur = current(); if (String(cur.id) === String(id)) return;
+    $('opinion').innerHTML = '<p class="loading">Pulling the volume…</p>';
+    let c;
+    try { c = await loadCase(id); } catch (e) { $('opinion').innerHTML = `<p class="err">Could not load that case. ${e.message}</p>`; return; }
+    state.player.push(c);
+    renderCase(c);
+    // Jev moves at the same time, from its own position.
+    const jevAt = state.jev[state.jev.length - 1];
+    if (state.jev.length < state.player.length && String(jevAt.id) !== String(state.puzzle.target.id)) {
+      try {
+        const r = await api(`/api/opponent?puzzle=${state.puzzle.seed}&at=${jevAt.id}&target=${state.puzzle.target.id}&visited=${state.jev.map(n => n.id).join(',')}&mode=${state.mode}`);
+        if (r.move) state.jev.push(r.move);
+      } catch (e) { /* Jev sits this one out */ }
+    }
+    renderLadder();
+    if (String(c.id) === String(state.puzzle.target.id)) finish();
+    window.scrollTo({ top: 0 });
+  }
+  function goBack(i) {
+    state.player = state.player.slice(0, i + 1);
+    renderCase(state.player[i]); renderLadder(); window.scrollTo({ top: 0 });
+  }
+
+  async function finish() {
+    state.finished = true; clearInterval(state.timer);
+    const hops = state.player.length - 1, par = state.puzzle.par;
+    const jevDone = state.jev.length && String(state.jev[state.jev.length - 1].id) === String(state.puzzle.target.id);
+    const box = $('done'); box.hidden = false;
+    const verdict = hops <= par - 2 ? 'Eagle.' : hops === par - 1 ? 'Birdie.' : hops === par ? 'Par.' : hops === par + 1 ? 'Bogey.' : `${hops - par} over par.`;
+    box.innerHTML = `<b>Reached ${state.puzzle.target.name} in ${hops} hops. ${verdict}</b><span>Par ${par}. Jev ${jevDone ? `got there in ${state.jev.length - 1}` : `is at ${state.jev[state.jev.length - 1].name} after ${state.jev.length - 1}`}.</span><span class="loading">Looking up the shortest route…</span>`;
+    try {
+      const p = await api(`/api/path?from=${state.puzzle.start.id}&to=${state.puzzle.target.id}&mode=${state.mode}`);
+      box.lastElementChild.remove();
+      const ol = document.createElement('ol'); p.path.forEach(n => { const l = document.createElement('li'); l.textContent = `${n.name} (${n.year})`; ol.appendChild(l); });
+      const h = document.createElement('span'); h.textContent = `Shortest known route, ${p.length} hops:`; box.append(h, ol);
+    } catch (e) { box.lastElementChild.textContent = 'Shortest route unavailable.'; }
+  }
+
+  // Target peek: the reporter's head matter, syllabus and the opening of the opinion, with citations unlinked.
+  async function openPeek() {
+    const t = state.puzzle && state.puzzle.target; if (!t) return;
+    const dlg = $('peek'), body = $('peekBody'); body.innerHTML = '<p class="loading">Pulling the volume…</p>';
+    dlg.showModal();
+    try {
+      const c = await loadCase(t.id);
+      const tmp = document.createElement('div'); tmp.innerHTML = c.html || '';
+      tmp.querySelectorAll('script,style,link,iframe').forEach(n => n.remove());
+      tmp.querySelectorAll('a.cite').forEach(a => { const sp = document.createElement('span'); sp.textContent = a.textContent; a.replaceWith(sp); });
+      const out = document.createElement('div');
+      const cap = document.createElement('div'); cap.className = 'caption';
+      const head = tmp.querySelector('.head-matter');
+      const headLines = head ? [...head.children].filter(n => !n.classList.contains('syllabus') && (n.classList.contains('parties') || n.textContent.trim().length < 140)) : [];
+      if (headLines.length) headLines.forEach(n => { n.classList.add(n.classList.contains('parties') ? 'party' : 'dates'); cap.appendChild(n); });
+      else { cap.innerHTML = '<div class="party"></div><div class="dates"></div>'; cap.firstChild.textContent = c.name.toUpperCase(); cap.lastChild.textContent = `${c.cite || ''} (${c.year})`; }
+      out.appendChild(cap);
+      const syl = tmp.querySelectorAll('.syllabus'); let n = 0;
+      syl.forEach(p => { if (n < 4) { out.appendChild(p); n++; } });
+      // Opening paragraphs of the opinion itself.
+      const paras = [...tmp.querySelectorAll('article p, .opinion p, p')].filter(p => !p.closest('.head-matter') && p.textContent.trim().length > 60);
+      paras.slice(0, syl.length ? 2 : 3).forEach(p => out.appendChild(p));
+      const more = document.createElement('p'); more.className = 'more';
+      more.textContent = `${c.cite || ''} (${c.year}). Cited by ${(c.cited_all || 0).toLocaleString()} later opinions, ${c.cited_by_total || c.cited_by.length} of them in this Court.`;
+      out.appendChild(more);
+      body.innerHTML = ''; body.appendChild(out);
+    } catch (e) { body.innerHTML = `<p class="err">Could not load the target. ${e.message}</p>`; }
+  }
+  $('btnTarget').addEventListener('click', openPeek);
+  $('peekClose').addEventListener('click', () => $('peek').close());
+  $('peek').addEventListener('click', e => { if (e.target === $('peek')) $('peek').close(); });
+
+  // Start screen.
+  // The docket: every puzzle is a row, and a row is one click to play.
+  let randomSeed = 1;
+  const td = (cls, text) => { const c = document.createElement('td'); if (cls) c.className = cls; if (text != null) c.textContent = text; return c; };
+  const caseCell = (cls, n) => { const c = td(cls); c.textContent = n.name + ' '; const s = document.createElement('small'); s.textContent = `(${n.year})`; c.appendChild(s); return c; };
+  function pickRow(cells, q) {
+    const tr = document.createElement('tr'); tr.className = 'pick'; tr.tabIndex = 0;
+    cells.forEach(c => tr.appendChild(c));
+    const go = () => startPuzzle(q);
+    tr.addEventListener('click', go); tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    return tr;
+  }
+  async function loadDocket() {
+    state.mode = modeOf(); $('modeHint').textContent = modeHints[state.mode];
+    const body = $('docket').tBodies[0];
+    try {
+      const list = await api(`/api/starters?mode=${state.mode}`);
+      body.innerHTML = '';
+      const groups = { 'warm-up': 'Warm-ups, one citation apart', 'starter': 'Two hops', 'three-hop': 'Three hops' };
+      let no = 0;
+      for (const g in groups) {
+        const items = list.filter(s => s.group === g); if (!items.length) continue;
+        const h = document.createElement('tr'); h.className = 'grp'; const hc = td(null, groups[g]); hc.colSpan = 5; h.appendChild(hc); body.appendChild(h);
+        items.forEach(s => body.appendChild(pickRow([td('no', String(++no)), caseCell('from', s.start), caseCell('to', s.target), td('theme', s.theme), td('par', String(s.par))], `pair=${s.pair}`)));
+      }
+      const r = pickRow([td('no', ''), td('from', 'A random pair'), td('to', 'drawn fresh each time'), td('theme', 'Harder: four to five hops apart'), td('par', '6 to 7')], null);
+      r.classList.add('random'); body.appendChild(r);
+    } catch (e) {
+      body.innerHTML = ''; const tr = document.createElement('tr'); const c = td('err', `Could not load the docket. ${e.message}`); c.colSpan = 5; tr.appendChild(c); body.appendChild(tr);
+    }
+  }
+  async function startPuzzle(q) {
+    const query = q || `seed=${randomSeed++}`;
+    const body = $('docket').tBodies[0];
+    try {
+      state.mode = modeOf();
+      const p = await api(`/api/puzzle?${query}&mode=${state.mode}`); state.puzzle = p;
+      $('parN').textContent = String(p.par); $('targetName').textContent = p.target.name; $('targetCite').textContent = `${p.target.cite || ''} (${p.target.year})`;
+      await begin();
+    } catch (e) {
+      const tr = document.createElement('tr'); const c = td('err', `Could not start that puzzle. ${e.message}`); c.colSpan = 5; tr.appendChild(c); body.prepend(tr);
+    }
+  }
+  async function begin() {
+    const p = state.puzzle; state.player = []; state.jev = []; state.cases = {}; state.finished = false; $('done').hidden = true;
+    $('start').hidden = true; $('page').hidden = false; $('side').hidden = false; document.querySelector('.wrap').classList.remove('docketing');
+    $('opinion').innerHTML = '<p class="loading">Pulling the volume…</p>';
+    const c = await loadCase(p.start.id); state.player = [c]; state.jev = [c];
+    renderCase(c); renderLadder(); applyMode(); window.scrollTo({ top: 0 });
+    state.t0 = Date.now(); clearInterval(state.timer);
+    state.timer = setInterval(() => { const s = Math.floor((Date.now() - state.t0) / 1000); $('clock').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }, 500);
+  }
+  function reset() {
+    clearInterval(state.timer); state.player = []; state.jev = []; state.finished = false; $('done').hidden = true; $('clock').textContent = '00:00';
+    $('page').hidden = true; $('side').hidden = true; $('start').hidden = false; document.querySelector('.wrap').classList.add('docketing');
+    renderLadder(); loadDocket(); window.scrollTo({ top: 0 });
+  }
+
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a.cite'); if (!a) return; e.preventDefault();
+    if (a.classList.contains('notext') || !allowed(a)) return;
+    hop(a.dataset.id);
+  });
+  document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', loadDocket));
+  ['fFrom', 'fTo', 'fWord'].forEach(id => $(id).addEventListener('input', renderLists));
+  $('btnNew').addEventListener('click', reset);
+  document.querySelector('.wrap').classList.add('docketing');
+  renderLadder();
+  // #play=<seed>[,<mode>] starts a random round immediately, for screenshots and testing.
+  const auto = /^#play(?:=(\d+))?(?:,(any|back|forward))?/.exec(location.hash);
+  if (auto) { if (auto[2]) document.querySelector(`input[name=mode][value=${auto[2]}]`).checked = true; }
+  loadDocket().then(() => { if (auto) startPuzzle(`seed=${auto[1] || 1}`); });
+})();
+</script>
+</body>
+</html>

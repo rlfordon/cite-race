@@ -1,0 +1,400 @@
+<title>Citation Highways</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: one full-width night window with a thin caption strip under it and a
+   tooltip that follows the pointer. Dark by choice: the subject is the night side. */
+:root {
+  --bg: #000000;
+  --fg: #e9eaec;
+  --muted: #8b9098;
+  --rule: #26292e;
+  --sodium: #ffa23a;
+  --mercury: #a7dccf;
+  --led: #f2f5ff;
+  --tail: #ff3b2f;
+  --font: 'Public Sans', 'Segoe UI', Arial, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5;
+  margin: 0; padding-block: 18px 24px; padding-inline: 16px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 12px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; }
+.alt { display: flex; gap: 6px; flex-wrap: wrap; }
+button { font: inherit; font-size: 13px; color: var(--fg); background: #0a0b0d; border: 1px solid var(--rule); padding: 5px 12px; cursor: pointer; }
+button[aria-pressed="true"] { background: var(--fg); color: #000; border-color: var(--fg); }
+button:focus-visible { outline: 2px solid var(--sodium); outline-offset: 2px; }
+.stage { position: relative; background: #000; aspect-ratio: 16 / 9; max-width: 100%; overflow: hidden; cursor: grab; touch-action: none; }
+.stage.dragging { cursor: grabbing; }
+canvas { display: block; width: 100%; height: 100%; }
+.tip { position: absolute; pointer-events: none; max-width: 340px; background: rgba(0,0,0,.86); border: 1px solid var(--rule);
+  padding: 9px 11px; font-size: 12.5px; display: grid; gap: 4px; }
+.tip b { font-weight: 600; }
+.tip .k { color: var(--muted); }
+.tip q { quotes: '\201C' '\201D'; color: var(--fg); }
+.tip .flow { display: flex; gap: 10px; color: var(--muted); }
+.tip .flow i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; font-size: 13px; color: var(--muted); max-width: 100%; }
+.cap p { margin: 0; max-width: 78ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; white-space: nowrap; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.lamp { width: 9px; height: 9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 7px 2px currentColor; }
+@media (max-width: 720px) { .stage { aspect-ratio: 4 / 3; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Citation Highways</h1>
+    <div class="alt" role="group" aria-label="Altitude">
+      <button id="bOrbit" aria-pressed="true">From orbit</button>
+      <button id="bPlane" aria-pressed="false">From the plane</button>
+      <button id="bStreet" aria-pressed="false">Street level</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="tip" id="tip" hidden></div>
+  </div>
+
+  <div class="cap">
+    <p>Scroll to zoom, drag to pan, hover a road. Every road is a citation. Streetlamps are coloured by the year of the citing opinion. Traffic runs on the busiest routes: white headlights travel toward the case being cited, red taillights come back from it. Synthetic graph; the named routes and their quoted language are real.</p>
+    <div class="legend">
+      <span><i class="lamp" style="color:var(--sodium)"></i>Sodium, before 1950</span>
+      <span><i class="lamp" style="color:var(--mercury)"></i>Mercury, 1950 to 1994</span>
+      <span><i class="lamp" style="color:var(--led)"></i>LED, 1995 on</span>
+      <span><i class="lamp" style="color:#fff"></i>Headlights, citing</span>
+      <span><i class="lamp" style="color:var(--tail)"></i>Taillights, cited by</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const rnd = mulberry32(477317);
+  const gauss = () => { let u = 0, v = 0; while (u === 0) u = rnd(); while (v === 0) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // World is 2000 x 1250 units.
+  const WW = 2000, WH = 1250;
+  const eraOf = y => y < 1950 ? 0 : y < 1995 ? 1 : 2;
+  const eraRGB = [[255, 162, 58], [167, 220, 207], [242, 245, 255]];
+
+  // Named hubs with the language they are cited for. Each is the centre of a metro.
+  const hubs = [
+    { name: 'Celotex Corp. v. Catrett', cite: '477 U.S. 317 (1986)', year: 1986, x: 1330, y: 560, r: 150, grid: 15, era: 0.55,
+      quote: 'the burden on the moving party may be discharged by showing, that is, pointing out to the district court, that there is an absence of evidence to support the nonmoving party’s case.' },
+    { name: 'Bell Atlantic Corp. v. Twombly', cite: '550 U.S. 544 (2007)', year: 2007, x: 1480, y: 380, r: 165, grid: 14, era: 0.8,
+      quote: 'enough facts to state a claim to relief that is plausible on its face.' },
+    { name: 'Anderson v. Liberty Lobby, Inc.', cite: '477 U.S. 242 (1986)', year: 1986, x: 1180, y: 700, r: 110, grid: 15, era: 0.6,
+      quote: 'the mere existence of some alleged factual dispute between the parties will not defeat an otherwise properly supported motion for summary judgment; the requirement is that there be no genuine issue of material fact.' },
+    { name: 'Erie R. Co. v. Tompkins', cite: '304 U.S. 64 (1938)', year: 1938, x: 1060, y: 450, r: 130, grid: 16, era: 0.4,
+      quote: 'There is no federal general common law.' },
+    { name: 'Chevron U.S.A. Inc. v. NRDC', cite: '467 U.S. 837 (1984)', year: 1984, x: 1620, y: 640, r: 100, grid: 14, era: 0.75,
+      quote: 'whether the agency’s answer is based on a permissible construction of the statute.' },
+    { name: 'Strickland v. Washington', cite: '466 U.S. 668 (1984)', year: 1984, x: 880, y: 680, r: 125, grid: 15, era: 0.5,
+      quote: 'counsel’s representation fell below an objective standard of reasonableness.' },
+    { name: 'Ashcroft v. Iqbal', cite: '556 U.S. 662 (2009)', year: 2009, x: 1400, y: 215, r: 90, grid: 13, era: 0.9,
+      quote: 'Threadbare recitals of the elements of a cause of action, supported by mere conclusory statements, do not suffice.' },
+    { name: 'Lujan v. Defenders of Wildlife', cite: '504 U.S. 555 (1992)', year: 1992, x: 1700, y: 470, r: 80, grid: 14, era: 0.85,
+      quote: 'the irreducible constitutional minimum of standing contains three elements.' },
+    { name: 'Marbury v. Madison', cite: '5 U.S. 137 (1803)', year: 1803, x: 620, y: 420, r: 115, grid: 16, era: 0.25,
+      quote: 'It is emphatically the province and duty of the judicial department to say what the law is.' },
+    { name: 'Miranda v. Arizona', cite: '384 U.S. 436 (1966)', year: 1966, x: 760, y: 860, r: 95, grid: 15, era: 0.45,
+      quote: 'the person must be warned that he has a right to remain silent.' },
+    { name: 'Brown v. Board of Education', cite: '347 U.S. 483 (1954)', year: 1954, x: 420, y: 650, r: 90, grid: 16, era: 0.4,
+      quote: 'Separate educational facilities are inherently unequal.' },
+    { name: 'M’Culloch v. Maryland', cite: '17 U.S. 316 (1819)', year: 1819, x: 330, y: 400, r: 100, grid: 17, era: 0.2,
+      quote: 'Let the end be legitimate, let it be within the scope of the constitution, and all means which are appropriate, which are plainly adapted to that end, which are not prohibited, but consist with the letter and spirit of the constitution, are constitutional.' },
+    { name: 'Daubert v. Merrell Dow', cite: '509 U.S. 579 (1993)', year: 1993, x: 1420, y: 930, r: 70, grid: 14, era: 0.8,
+      quote: 'the trial judge must ensure that any and all scientific testimony or evidence admitted is not only relevant, but reliable.' },
+  ];
+  const land = [
+    { x: 1000, y: 600, rx: 560, ry: 360 }, { x: 440, y: 560, rx: 300, ry: 280 }, { x: 1550, y: 520, rx: 300, ry: 300 },
+    { x: 1420, y: 930, rx: 110, ry: 170 }, { x: 800, y: 900, rx: 320, ry: 110 },
+  ];
+  const onLand = (x, y) => land.some(e => ((x - e.x) / e.rx) ** 2 + ((y - e.y) / e.ry) ** 2 < 1);
+
+  // Roads. kind: street | arterial | ring | interstate | county. Each has a year (lamp colour), traffic volume, and where it goes.
+  const roads = [];
+  function addRoad(ax, ay, bx, by, kind, year, vol, to, from) { roads.push({ ax, ay, bx, by, kind, year, vol, to, from, len: Math.hypot(bx - ax, by - ay) }); }
+
+  function yearAt(h, d) { // old core, newer sprawl, per metro bias
+    const base = 1789 + (2026 - 1789) * Math.min(1, Math.max(0, h.era * 0.6 + d * 0.7 + gauss() * 0.12));
+    return Math.round(Math.min(2026, Math.max(1789, base)));
+  }
+
+  hubs.forEach((h, hi) => {
+    const s = h.grid, rot = rnd() * Math.PI, c = Math.cos(rot), sn = Math.sin(rot);
+    const n = Math.ceil(h.r / s) + 1;
+    const pt = (i, j) => ({ x: h.x + (i * s) * c - (j * s) * sn, y: h.y + (i * s) * sn + (j * s) * c });
+    const ok = (i, j) => { const p = pt(i, j); const d = Math.hypot(i * s, j * s) / h.r; return d < 1 && onLand(p.x, p.y) && rnd() > Math.pow(d, 2.4) * 0.95; };
+    const cells = new Map();
+    for (let i = -n; i <= n; i++) for (let j = -n; j <= n; j++) if (ok(i, j)) cells.set(i + ',' + j, true);
+    for (const key of cells.keys()) {
+      const [i, j] = key.split(',').map(Number); const a = pt(i, j); const d = Math.hypot(i * s, j * s) / h.r;
+      const y = yearAt(h, d);
+      if (cells.has((i + 1) + ',' + j)) { const b = pt(i + 1, j); addRoad(a.x, a.y, b.x, b.y, 'street', y, 0, null, hi); }
+      if (cells.has(i + ',' + (j + 1))) { const b = pt(i, j + 1); addRoad(a.x, a.y, b.x, b.y, 'street', y, 0, null, hi); }
+    }
+    // Arterials radiating from the hub: the roads that cite it most.
+    const k = 5 + Math.floor(rnd() * 3);
+    for (let a = 0; a < k; a++) {
+      const ang = (a / k) * Math.PI * 2 + rnd() * 0.5, L = h.r * (0.95 + rnd() * 0.25);
+      let px = h.x, py = h.y;
+      const segs = 4;
+      for (let q = 1; q <= segs; q++) {
+        const t = q / segs, bend = Math.sin(t * Math.PI) * 18 * (rnd() - 0.5);
+        const x = h.x + Math.cos(ang) * L * t + Math.cos(ang + Math.PI / 2) * bend, y = h.y + Math.sin(ang) * L * t + Math.sin(ang + Math.PI / 2) * bend;
+        if (onLand(x, y)) addRoad(px, py, x, y, 'arterial', yearAt(h, t * 0.8), 0.6 + rnd() * 0.5, hi, hi);
+        px = x; py = y;
+      }
+    }
+    // Ring road.
+    const rr = h.r * (0.5 + rnd() * 0.2), segsR = 28;
+    for (let q = 0; q < segsR; q++) {
+      const a1 = q / segsR * Math.PI * 2, a2 = (q + 1) / segsR * Math.PI * 2;
+      const x1 = h.x + Math.cos(a1) * rr, y1 = h.y + Math.sin(a1) * rr * 0.85, x2 = h.x + Math.cos(a2) * rr, y2 = h.y + Math.sin(a2) * rr * 0.85;
+      if (onLand(x1, y1) && onLand(x2, y2)) addRoad(x1, y1, x2, y2, 'ring', yearAt(h, 0.6), 0.35, hi, hi);
+    }
+  });
+
+  // Interstates: connect each hub to its two or three nearest, gently curved, with traffic.
+  const links = new Set();
+  hubs.forEach((h, i) => {
+    const near = hubs.map((g, j) => ({ j, d: Math.hypot(g.x - h.x, g.y - h.y) })).filter(o => o.j !== i).sort((a, b) => a.d - b.d).slice(0, 2 + (i % 2));
+    near.forEach(o => {
+      const key = Math.min(i, o.j) + '-' + Math.max(i, o.j); if (links.has(key)) return; links.add(key);
+      const g = hubs[o.j], segs = 10, bow = (rnd() - 0.5) * 0.25;
+      let px = h.x, py = h.y;
+      for (let q = 1; q <= segs; q++) {
+        const t = q / segs, x = h.x + (g.x - h.x) * t + (g.y - h.y) * bow * Math.sin(t * Math.PI), y = h.y + (g.y - h.y) * t - (g.x - h.x) * bow * Math.sin(t * Math.PI);
+        addRoad(px, py, x, y, 'interstate', Math.round((h.year + g.year) / 2 + gauss() * 8), 1, o.j, i);
+        px = x; py = y;
+      }
+    });
+  });
+
+  // Small towns and county roads.
+  const towns = [];
+  for (let t = 0; t < 110; t++) {
+    const x = rnd() * WW, y = rnd() * WH;
+    if (!onLand(x, y) || hubs.some(h => Math.hypot(h.x - x, h.y - y) < h.r * 1.1)) continue;
+    towns.push({ x, y, year: 1800 + Math.floor(rnd() * 226) });
+    const s = 9, m = 1 + Math.floor(rnd() * 2);
+    for (let i = -m; i <= m; i++) for (let j = -m; j <= m; j++) {
+      if (rnd() < 0.3) continue;
+      if (i < m) addRoad(x + i * s, y + j * s, x + (i + 1) * s, y + j * s, 'street', towns[towns.length - 1].year, 0, null, -1);
+      if (j < m) addRoad(x + i * s, y + j * s, x + i * s, y + (j + 1) * s, 'street', towns[towns.length - 1].year, 0, null, -1);
+    }
+  }
+  towns.forEach((t, i) => {
+    const near = towns.map((u, j) => ({ j, d: Math.hypot(u.x - t.x, u.y - t.y) })).filter(o => o.j !== i && o.d < 260).sort((a, b) => a.d - b.d).slice(0, 2);
+    near.forEach(o => { if (o.j > i) addRoad(t.x, t.y, towns[o.j].x, towns[o.j].y, 'county', Math.round((t.year + towns[o.j].year) / 2), 0.12, null, -1); });
+    const h = hubs.map((g, j) => ({ j, d: Math.hypot(g.x - t.x, g.y - t.y) })).sort((a, b) => a.d - b.d)[0];
+    if (h.d < 330 && rnd() < 0.5) addRoad(t.x, t.y, hubs[h.j].x, hubs[h.j].y, 'county', t.year, 0.2, h.j, -1);
+  });
+
+  // Traffic particles on roads with volume.
+  const cars = [];
+  roads.forEach((r, ri) => {
+    if (!r.vol) return;
+    const count = Math.round(r.len / 9 * r.vol * (r.kind === 'interstate' ? 1.4 : 1));
+    for (let i = 0; i < count; i++) cars.push({ r: ri, t: rnd(), dir: rnd() < 0.5 ? 1 : -1, v: (0.5 + rnd()) * 0.0022 });
+  });
+
+  // Sprites.
+  const sprites = {};
+  function sprite(rgb) {
+    const key = rgb.join(','); if (sprites[key]) return sprites[key];
+    const s = document.createElement('canvas'); s.width = s.height = 32; const g = s.getContext('2d');
+    const grad = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grad.addColorStop(0, `rgba(${key},1)`); grad.addColorStop(0.3, `rgba(${key},0.5)`); grad.addColorStop(1, `rgba(${key},0)`);
+    g.fillStyle = grad; g.fillRect(0, 0, 32, 32); return sprites[key] = s;
+  }
+
+  // View.
+  const stage = document.getElementById('stage'), cv = document.getElementById('cv'), tip = document.getElementById('tip');
+  const ctx = cv.getContext('2d');
+  const stat = document.createElement('canvas'), sctx = stat.getContext('2d');
+  let W = 0, H = 0, dpr = 1;
+  const view = { z: 0.5, cx: 1000, cy: 600 };
+  let dirty = true, hover = -1, mouse = null;
+
+  function resize() {
+    const r = stage.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.round(r.width), H = Math.round(r.height);
+    cv.width = stat.width = Math.round(W * dpr); cv.height = stat.height = Math.round(H * dpr);
+    dirty = true;
+  }
+  const toScreen = (x, y) => [((x - view.cx) * view.z + W / 2), ((y - view.cy) * view.z + H / 2)];
+  const toWorld = (sx, sy) => [(sx - W / 2) / view.z + view.cx, (sy - H / 2) / view.z + view.cy];
+
+  const style = {
+    street:     { w: 1.0, a: 0.28, lamp: 1.0, gap: 7 },
+    county:     { w: 1.0, a: 0.18, lamp: 0.8, gap: 11 },
+    ring:       { w: 1.6, a: 0.5,  lamp: 1.4, gap: 6 },
+    arterial:   { w: 1.8, a: 0.6,  lamp: 1.6, gap: 6 },
+    interstate: { w: 2.2, a: 0.7,  lamp: 1.8, gap: 6 },
+  };
+
+  function renderStatic() {
+    const g = sctx; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'lighter';
+    const z = view.z, lamps = z >= 1.1;
+    for (const r of roads) {
+      const [ax, ay] = toScreen(r.ax, r.ay), [bx, by] = toScreen(r.bx, r.by);
+      if (Math.max(ax, bx) < -20 || Math.min(ax, bx) > W + 20 || Math.max(ay, by) < -20 || Math.min(ay, by) > H + 20) continue;
+      const st = style[r.kind], rgb = eraRGB[eraOf(r.year)];
+      if (!lamps) {
+        // Far away: a road is a thin line of light; dense grids pile up into glow.
+        const a = Math.min(1, st.a * (0.55 + z * 0.9));
+        g.strokeStyle = `rgba(${rgb.join(',')},${a.toFixed(3)})`; g.lineWidth = Math.max(0.6, st.w * z * 0.9);
+        g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke();
+      } else {
+        // Up close: streetlamps spaced along the road, plus a dim road surface.
+        g.strokeStyle = `rgba(${rgb.join(',')},0.10)`; g.lineWidth = st.w * z * 0.5;
+        g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke();
+        const n = Math.max(1, Math.round(r.len / st.gap)), sp = sprite(rgb), rad = st.lamp * Math.min(3.2, 0.9 + z * 0.5);
+        g.globalAlpha = 0.85;
+        for (let i = 0; i <= n; i++) { const t = i / n; const x = ax + (bx - ax) * t, y = ay + (by - ay) * t; g.drawImage(sp, x - rad, y - rad, rad * 2, rad * 2); }
+        g.globalAlpha = 1;
+      }
+    }
+    // Long-exposure traffic streaks when far away, so highways read as highways from orbit.
+    if (!lamps) {
+      for (const r of roads) {
+        if (!r.vol || r.vol < 0.3) continue;
+        const [ax, ay] = toScreen(r.ax, r.ay), [bx, by] = toScreen(r.bx, r.by);
+        const nx = -(by - ay), ny = bx - ax, L = Math.hypot(nx, ny) || 1, off = Math.max(0.6, 1.1 * z);
+        g.lineWidth = Math.max(0.5, 0.9 * z);
+        g.strokeStyle = `rgba(255,255,255,${(0.35 * r.vol).toFixed(3)})`; g.beginPath(); g.moveTo(ax + nx / L * off, ay + ny / L * off); g.lineTo(bx + nx / L * off, by + ny / L * off); g.stroke();
+        g.strokeStyle = `rgba(255,59,47,${(0.45 * r.vol).toFixed(3)})`; g.beginPath(); g.moveTo(ax - nx / L * off, ay - ny / L * off); g.lineTo(bx - nx / L * off, by - ny / L * off); g.stroke();
+      }
+    }
+    // Atmospheric bloom: the same frame, blurred, added back.
+    g.globalCompositeOperation = 'source-over';
+    const bloom = document.createElement('canvas'); bloom.width = stat.width; bloom.height = stat.height;
+    const bc = bloom.getContext('2d'); bc.filter = `blur(${Math.round(6 * dpr)}px)`; bc.drawImage(stat, 0, 0);
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'lighter'; g.globalAlpha = lamps ? 0.45 : 0.7; g.drawImage(bloom, 0, 0); g.globalAlpha = 1;
+    g.globalCompositeOperation = 'source-over';
+    dirty = false;
+  }
+
+  function roadLabel(r) {
+    if (r.kind === 'interstate') { const h = hubs[r.to], f = hubs[r.from]; return { title: `${f.name.split(' v.')[0]} to ${h.name}`, cite: h.cite, quote: h.quote, hops: 1, vol: 'Interstate. Both opinions cite each other’s line of cases.' }; }
+    if (r.to != null && r.to >= 0) { const h = hubs[r.to]; return { title: `To ${h.name}`, cite: h.cite, quote: h.quote, hops: 1, vol: r.kind === 'arterial' ? 'Arterial. One of the most travelled citations into this case.' : r.kind === 'ring' ? 'Ring road. Cases that cite this hub and each other.' : 'County road. A single citation from a small case.' }; }
+    const f = r.from >= 0 ? hubs[r.from] : null;
+    return { title: f ? `Local street in the ${f.name.split(' v.')[0]} metro` : 'Local street', cite: `Citing opinion decided ${r.year}`, quote: null, hops: null, vol: 'One citation between two small cases. Hover an arterial or interstate for the language.' };
+  }
+
+  function frame(ts) {
+    if (dirty) renderStatic();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(stat, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const z = view.z;
+    if (z >= 0.75) { // moving traffic
+      ctx.globalCompositeOperation = 'lighter';
+      const size = Math.max(0.8, 0.9 * z);
+      for (const c of cars) {
+        const r = roads[c.r];
+        if (!reduced) { c.t += c.v * c.dir * (60 / Math.max(1, r.len / 10)); if (c.t > 1) c.t -= 1; if (c.t < 0) c.t += 1; }
+        const nx = -(r.by - r.ay), ny = r.bx - r.ax, L = Math.hypot(nx, ny) || 1, off = 1.3 * c.dir;
+        const wx = r.ax + (r.bx - r.ax) * c.t + nx / L * off, wy = r.ay + (r.by - r.ay) * c.t + ny / L * off;
+        const [sx, sy] = toScreen(wx, wy);
+        if (sx < -5 || sx > W + 5 || sy < -5 || sy > H + 5) continue;
+        ctx.fillStyle = c.dir > 0 ? 'rgba(255,255,255,0.95)' : 'rgba(255,59,47,0.95)';
+        ctx.beginPath(); ctx.arc(sx, sy, size, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    // Hover highlight.
+    if (hover >= 0) {
+      const r = roads[hover]; const [ax, ay] = toScreen(r.ax, r.ay), [bx, by] = toScreen(r.bx, r.by);
+      ctx.strokeStyle = 'rgba(233,234,236,0.9)'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+      // Continue the highlight along the same route so a whole road lights up.
+      ctx.strokeStyle = 'rgba(233,234,236,0.45)'; ctx.lineWidth = 2;
+      for (const q of roads) if (q !== r && q.kind === r.kind && q.to === r.to && q.from === r.from && r.kind !== 'street') {
+        const [qx, qy] = toScreen(q.ax, q.ay), [px, py] = toScreen(q.bx, q.by); ctx.beginPath(); ctx.moveTo(qx, qy); ctx.lineTo(px, py); ctx.stroke();
+      }
+    }
+    // Hub names when close enough to read a map.
+    if (z >= 0.9) {
+      ctx.font = '600 13px "Public Sans", Arial, sans-serif'; ctx.textAlign = 'left';
+      for (const h of hubs) {
+        const [sx, sy] = toScreen(h.x, h.y); if (sx < -200 || sx > W + 20 || sy < -20 || sy > H + 20) continue;
+        ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.9)'; ctx.fillStyle = '#e9eaec'; ctx.lineJoin = 'round';
+        ctx.strokeText(h.name, sx + 10, sy - 8); ctx.fillText(h.name, sx + 10, sy - 8);
+        ctx.font = '400 11px "Public Sans", Arial, sans-serif'; ctx.fillStyle = '#8b9098';
+        ctx.strokeText(h.cite, sx + 10, sy + 6); ctx.fillText(h.cite, sx + 10, sy + 6);
+        ctx.font = '600 13px "Public Sans", Arial, sans-serif';
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // Interaction.
+  function distToSeg(px, py, r) {
+    const dx = r.bx - r.ax, dy = r.by - r.ay, l2 = dx * dx + dy * dy || 1;
+    let t = ((px - r.ax) * dx + (py - r.ay) * dy) / l2; t = Math.max(0, Math.min(1, t));
+    return Math.hypot(px - (r.ax + dx * t), py - (r.ay + dy * t));
+  }
+  function pick(sx, sy) {
+    const [wx, wy] = toWorld(sx, sy); const thr = 9 / view.z; let best = -1, bd = thr;
+    for (let i = 0; i < roads.length; i++) {
+      const r = roads[i]; if (view.z < 1.1 && r.kind === 'street') continue;
+      const d = distToSeg(wx, wy, r); const pri = r.kind === 'street' ? 1.6 : r.kind === 'county' ? 1.2 : 1;
+      if (d * pri < bd) { bd = d * pri; best = i; }
+    }
+    return best;
+  }
+  function showTip(sx, sy) {
+    if (hover < 0) { tip.hidden = true; return; }
+    const r = roads[hover], L = roadLabel(r);
+    tip.innerHTML = `<b>${L.title}</b><span class="k">${L.cite}</span>` +
+      (L.quote ? `<span>Cited for: <q>${L.quote}</q></span>` : '') + `<span class="k">${L.vol}</span>` +
+      (r.vol ? `<span class="flow"><span><i style="background:#fff;box-shadow:0 0 5px #fff"></i>citing</span><span><i style="background:#ff3b2f;box-shadow:0 0 5px #ff3b2f"></i>cited by</span></span>` : '');
+    tip.hidden = false;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = Math.min(W - tw - 8, sx + 14) + 'px'; tip.style.top = (sy + th + 18 > H ? sy - th - 10 : sy + 14) + 'px';
+  }
+  let drag = null;
+  stage.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy, moved: false }; stage.setPointerCapture(e.pointerId); stage.classList.add('dragging'); });
+  stage.addEventListener('pointermove', e => {
+    const rect = stage.getBoundingClientRect(); const sx = e.clientX - rect.left, sy = e.clientY - rect.top; mouse = [sx, sy];
+    if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.hypot(dx, dy) > 2) drag.moved = true;
+      view.cx = drag.cx - dx / view.z; view.cy = drag.cy - dy / view.z; dirty = true; hover = -1; tip.hidden = true; return; }
+    hover = pick(sx, sy); showTip(sx, sy);
+  });
+  const endDrag = e => { drag = null; stage.classList.remove('dragging'); };
+  stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
+  stage.addEventListener('pointerleave', () => { hover = -1; tip.hidden = true; });
+  stage.addEventListener('wheel', e => {
+    e.preventDefault(); const rect = stage.getBoundingClientRect(); const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+    const [wx, wy] = toWorld(sx, sy); const f = Math.exp(-e.deltaY * 0.0012); view.z = Math.min(8, Math.max(0.3, view.z * f));
+    view.cx = wx - (sx - W / 2) / view.z; view.cy = wy - (sy - H / 2) / view.z; dirty = true; setPressed(null);
+  }, { passive: false });
+
+  const buttons = { bOrbit: { z: 0.5, cx: 1000, cy: 600 }, bPlane: { z: 1.6, cx: 1330, cy: 560 }, bStreet: { z: 4.5, cx: 1300, cy: 585 } };
+  function setPressed(id) { for (const k in buttons) document.getElementById(k).setAttribute('aria-pressed', String(k === id)); }
+  let anim = null;
+  function flyTo(t, id) {
+    setPressed(id);
+    const from = { z: view.z, cx: view.cx, cy: view.cy }, t0 = performance.now(), dur = reduced ? 0 : 700;
+    cancelAnimationFrame(anim);
+    const step = now => { const u = dur ? Math.min(1, (now - t0) / dur) : 1, e = u < 0.5 ? 2 * u * u : -1 + (4 - 2 * u) * u;
+      view.z = from.z * Math.pow(t.z / from.z, e); view.cx = from.cx + (t.cx - from.cx) * e; view.cy = from.cy + (t.cy - from.cy) * e; dirty = true;
+      if (u < 1) anim = requestAnimationFrame(step); };
+    anim = requestAnimationFrame(step);
+  }
+  for (const k in buttons) document.getElementById(k).addEventListener('click', () => flyTo(buttons[k], k));
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>

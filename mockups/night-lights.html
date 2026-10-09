@@ -1,0 +1,376 @@
+<title>Citation Night Lights</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: a stack of five full-width satellite frames with plain caption text beneath each,
+   like a NASA image gallery. Single dark world by choice: the subject is the night side. */
+:root {
+  --bg: #000000;
+  --fg: #e9eaec;
+  --muted: #8b9098;
+  --rule: #26292e;
+  --sodium: #ffa23a;   /* high-pressure sodium lamp */
+  --mercury: #a7dccf;  /* mercury vapour lamp */
+  --led: #f2f5ff;      /* white LED */
+  --font: 'Public Sans', 'Segoe UI', Arial, sans-serif;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.5;
+  margin: 0; padding-block: 28px 64px; padding-inline: 16px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 44px; }
+header { display: grid; gap: 6px; max-width: 62ch; }
+h1 { font-size: 22px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); }
+figure { margin: 0; display: grid; gap: 10px; }
+.frame { position: relative; background: #000; aspect-ratio: 16 / 10; max-width: 100%; }
+canvas { display: block; width: 100%; height: 100%; }
+figcaption { display: grid; gap: 2px; font-size: 13px; color: var(--muted); max-width: 72ch; }
+figcaption b { color: var(--fg); font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px 22px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.lamp { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 8px 2px currentColor; background: currentColor; }
+.hud { position: absolute; top: 14px; right: 14px; width: 330px; max-width: calc(100% - 28px);
+  background: rgba(0,0,0,.78); border: 1px solid var(--rule); padding: 12px 14px; font-size: 12.5px;
+  display: grid; gap: 10px; font-variant-numeric: tabular-nums; }
+.hud .row { display: flex; justify-content: space-between; gap: 12px; }
+.hud .k { color: var(--muted); }
+.hud ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.hud li { padding-left: 14px; text-indent: -14px; }
+.hud li::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--led); margin-right: 8px; vertical-align: middle; box-shadow: 0 0 5px 1px var(--led); }
+.hud li.old::before { background: var(--sodium); box-shadow: 0 0 5px 1px var(--sodium); }
+.hud li.mid::before { background: var(--mercury); box-shadow: 0 0 5px 1px var(--mercury); }
+.hud .jev { color: var(--sodium); }
+.hud .note { color: var(--muted); border-top: 1px solid var(--rule); padding-top: 8px; }
+@media (max-width: 720px) {
+  .hud { position: static; width: auto; max-width: none; }
+  .frame { aspect-ratio: 4 / 3; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Citation Night Lights</h1>
+    <p>Five renders of the citation race board, drawn from a synthetic graph of 8,000 opinions while the real Supreme Court graph downloads. Luminance is citation count. Lamp colour is the year decided.</p>
+  </header>
+
+  <figure>
+    <div class="frame"><canvas id="c1"></canvas></div>
+    <figcaption><b>Fig. 1 Composite, monochrome.</b> Raster cells of 5 px, additive. No edges drawn. Hubs bloom into cities; the two biggest are Twombly and Celotex.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="frame"><canvas id="c2"></canvas></div>
+    <figcaption><b>Fig. 2 Lamp era.</b> Same graph, continuous glow, coloured by the lamp installed when the case was decided. Faint lines are the most travelled citation corridors between hubs.</figcaption>
+    <div class="legend">
+      <span><i class="lamp" style="color:var(--sodium)"></i>Sodium, decided 1789 to 1949</span>
+      <span><i class="lamp" style="color:var(--mercury)"></i>Mercury vapour, 1950 to 1994</span>
+      <span><i class="lamp" style="color:var(--led)"></i>LED, 1995 to 2026</span>
+    </div>
+  </figure>
+
+  <figure>
+    <div class="frame">
+      <canvas id="c3"></canvas>
+      <div class="hud">
+        <div class="row"><span>Hop 1, par 3</span><span>00:42</span></div>
+        <div><span class="k">At</span> Erie R. Co. v. Tompkins, 304 U.S. 64 (1938)</div>
+        <div><span class="k">Target</span> Shady Grove Orthopedic Assocs. v. Allstate Ins. Co., 559 U.S. 393 (2010)</div>
+        <div>
+          <div class="k">Cites, 3 of 31</div>
+          <ul>
+            <li class="old">Swift v. Tyson, 41 U.S. 1 (1842)</li>
+            <li class="old">Black &amp; White Taxicab Co. v. Brown &amp; Yellow Taxicab Co., 276 U.S. 518 (1928)</li>
+            <li class="old">Baltimore &amp; Ohio R. Co. v. Baugh, 149 U.S. 368 (1893)</li>
+          </ul>
+        </div>
+        <div>
+          <div class="k">Cited by, 5 of 1,480. Filter by court, year, word.</div>
+          <ul>
+            <li class="old">Klaxon Co. v. Stentor Elec. Mfg. Co., 313 U.S. 487 (1941)</li>
+            <li class="old">Guaranty Trust Co. v. York, 326 U.S. 99 (1945)</li>
+            <li class="mid">Hanna v. Plumer, 380 U.S. 460 (1965)</li>
+            <li class="mid">Walker v. Armco Steel Corp., 446 U.S. 740 (1980)</li>
+            <li>Gasperini v. Center for Humanities, 518 U.S. 415 (1996)</li>
+          </ul>
+        </div>
+        <div class="jev">Jev is 2 hops in, at Hanna v. Plumer.</div>
+        <div class="note">Counts are illustrative. Lists come from the live graph in the real game.</div>
+      </div>
+    </div>
+    <figcaption><b>Fig. 3 Race in progress.</b> The player's route is white, Jev's is sodium. Big cities are visible from anywhere on the map; small lights only near your position.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="frame"><canvas id="c4"></canvas></div>
+    <figcaption><b>Fig. 4 Blackout, local-only mode.</b> The twenty most-cited cases are switched off. You see only the lights within reach of where you stand, plus the dim outline of everything else.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="frame"><canvas id="c5"></canvas></div>
+    <figcaption><b>Fig. 5 Standing on a hub.</b> Zoomed to one metro: a hub and the cases that cite it, with their citation lines as streets. Colour is still lamp era, so the age of the neighbourhood reads at a glance.</figcaption>
+  </figure>
+</div>
+
+<script>
+(function () {
+  // Seeded PRNG so every render is identical.
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const rnd = mulberry32(20261008);
+  const gauss = () => { let u = 0, v = 0; while (u === 0) u = rnd(); while (v === 0) v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+
+  const W = 1600, H = 1000;
+
+  // Doctrinal metros: position, spread, share of nodes, era bias (0 old .. 1 new), hub count.
+  const metros = [
+    { x: 1180, y: 330, sx: 70,  sy: 55,  n: 900, era: 0.75, hubs: 4 },  // civil procedure (Twombly, Iqbal)
+    { x: 1080, y: 470, sx: 60,  sy: 48,  n: 700, era: 0.6,  hubs: 3 },  // summary judgment (Celotex, Anderson)
+    { x: 930,  y: 380, sx: 85,  sy: 70,  n: 650, era: 0.55, hubs: 2 },  // federal courts, Erie
+    { x: 1260, y: 560, sx: 55,  sy: 45,  n: 450, era: 0.8,  hubs: 2 },  // admin law (Chevron)
+    { x: 820,  y: 560, sx: 95,  sy: 60,  n: 600, era: 0.5,  hubs: 2 },  // criminal procedure
+    { x: 640,  y: 480, sx: 80,  sy: 90,  n: 500, era: 0.45, hubs: 1 },  // first amendment
+    { x: 1020, y: 660, sx: 60,  sy: 40,  n: 350, era: 0.7,  hubs: 1 },  // habeas
+    { x: 470,  y: 620, sx: 70,  sy: 55,  n: 380, era: 0.5,  hubs: 1 },  // equal protection
+    { x: 1330, y: 420, sx: 45,  sy: 40,  n: 300, era: 0.85, hubs: 1 },  // standing (Lujan)
+    { x: 300,  y: 430, sx: 60,  sy: 110, n: 320, era: 0.35, hubs: 1 },  // commerce clause
+    { x: 720,  y: 720, sx: 70,  sy: 45,  n: 300, era: 0.4,  hubs: 1 },  // takings, property
+    { x: 1150, y: 790, sx: 40,  sy: 60,  n: 220, era: 0.65, hubs: 1 },  // florida-like peninsula
+    { x: 540,  y: 300, sx: 90,  sy: 50,  n: 260, era: 0.3,  hubs: 0 },  // admiralty, old law
+    { x: 1400, y: 290, sx: 40,  sy: 35,  n: 180, era: 0.9,  hubs: 0 },
+  ];
+  // Landmass for the rural scatter: union of ellipses. Outside is ocean.
+  const land = [
+    { x: 950, y: 500, rx: 520, ry: 290 }, { x: 420, y: 480, rx: 260, ry: 230 },
+    { x: 1250, y: 420, rx: 230, ry: 190 }, { x: 1150, y: 760, rx: 90, ry: 140 },
+    { x: 700, y: 720, rx: 240, ry: 90 },
+  ];
+  const onLand = (x, y) => land.some(e => ((x - e.x) / e.rx) ** 2 + ((y - e.y) / e.ry) ** 2 < 1);
+
+  const nodes = [];
+  function yearFor(bias) {
+    // Skew by metro: mix of a uniform old range and a recent-weighted range.
+    const t = rnd();
+    const y = t < bias ? 1950 + Math.pow(rnd(), 0.6) * 76 : 1789 + Math.pow(rnd(), 0.7) * 161;
+    return Math.round(Math.min(2026, Math.max(1789, y)));
+  }
+  function cites() { // Pareto tail, most cases cited a handful of times.
+    const u = rnd(); return Math.min(260, Math.floor(1 / Math.pow(u, 0.85)) - 1 + Math.floor(rnd() * 4));
+  }
+  metros.forEach((m, mi) => {
+    for (let i = 0; i < m.n; i++) {
+      const x = m.x + gauss() * m.sx * (0.6 + rnd()), y = m.y + gauss() * m.sy * (0.6 + rnd());
+      nodes.push({ x, y, year: yearFor(m.era), c: cites(), metro: mi });
+    }
+    for (let h = 0; h < m.hubs; h++) {
+      nodes.push({ x: m.x + gauss() * m.sx * 0.25, y: m.y + gauss() * m.sy * 0.25, year: yearFor(m.era), c: 900 + Math.floor(rnd() * 2400), metro: mi, hub: true });
+    }
+  });
+  // Rural scatter.
+  let tries = 0;
+  while (nodes.length < 8000 && tries < 200000) {
+    tries++;
+    const x = rnd() * W, y = rnd() * H;
+    if (!onLand(x, y)) continue;
+    if (rnd() < 0.55) continue;
+    nodes.push({ x, y, year: yearFor(0.4), c: Math.min(cites(), 30), metro: -1 });
+  }
+  // Roads: a few rural strings of light along lines between metros.
+  for (let r = 0; r < 26; r++) {
+    const a = metros[Math.floor(rnd() * metros.length)], b = metros[Math.floor(rnd() * metros.length)];
+    if (a === b) continue;
+    const k = 12 + Math.floor(rnd() * 20);
+    for (let i = 1; i < k; i++) {
+      const t = i / k, x = a.x + (b.x - a.x) * t + gauss() * 6, y = a.y + (b.y - a.y) * t + gauss() * 6;
+      if (onLand(x, y)) nodes.push({ x, y, year: yearFor(0.5), c: 2 + Math.floor(rnd() * 6), metro: -1 });
+    }
+  }
+  const maxC = Math.max(...nodes.map(n => n.c));
+  nodes.forEach(n => { n.L = Math.log1p(n.c) / Math.log1p(maxC); });
+  const hubs = nodes.filter(n => n.hub).sort((a, b) => b.c - a.c);
+  const hubNames = ['Bell Atlantic v. Twombly', 'Celotex Corp. v. Catrett', 'Ashcroft v. Iqbal', 'Anderson v. Liberty Lobby', 'Erie R. Co. v. Tompkins', 'Chevron U.S.A. v. NRDC', 'Strickland v. Washington', 'Lujan v. Defenders of Wildlife'];
+
+  const era = y => y < 1950 ? 0 : y < 1995 ? 1 : 2;
+  const eraRGB = [[255, 162, 58], [167, 220, 207], [242, 245, 255]];
+  const whiteRGB = [255, 255, 255];
+
+  // Glow sprites per colour.
+  const sprites = {};
+  function sprite(rgb) {
+    const key = rgb.join(',');
+    if (sprites[key]) return sprites[key];
+    const s = document.createElement('canvas'); s.width = s.height = 64;
+    const g = s.getContext('2d');
+    const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, `rgba(${key},1)`); grad.addColorStop(0.25, `rgba(${key},0.55)`);
+    grad.addColorStop(0.6, `rgba(${key},0.12)`); grad.addColorStop(1, `rgba(${key},0)`);
+    g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+    return sprites[key] = s;
+  }
+
+  function setup(id) {
+    const cv = document.getElementById(id); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d'); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+    return ctx;
+  }
+
+  // Continuous glow render. filter(n) -> brightness multiplier (0 to skip), colour(n) -> rgb.
+  function glow(ctx, opts) {
+    const { mul = () => 1, rgb = n => eraRGB[era(n.year)], scale = 1, ox = 0, oy = 0 } = opts;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const n of nodes) {
+      const m = mul(n); if (m <= 0) continue;
+      const L = n.L;
+      const r = (1.6 + 22 * Math.pow(L, 2.2)) * scale;
+      const a = Math.min(1, (0.10 + 0.9 * Math.pow(L, 1.4)) * m);
+      ctx.globalAlpha = a;
+      const x = (n.x - ox) * scale, y = (n.y - oy) * scale;
+      ctx.drawImage(sprite(rgb(n)), x - r, y - r, 2 * r, 2 * r);
+      if (n.hub) { // second, wide bloom for cities
+        ctx.globalAlpha = 0.35 * m;
+        ctx.drawImage(sprite(rgb(n)), x - r * 3, y - r * 3, 6 * r, 6 * r);
+      }
+    }
+    ctx.restore();
+  }
+
+  // Fig. 1: monochrome raster.
+  (function () {
+    const ctx = setup('c1');
+    const cell = 5, cols = Math.ceil(W / cell), rows = Math.ceil(H / cell);
+    const acc = new Float32Array(cols * rows);
+    const add = (cx, cy, v) => { if (cx >= 0 && cy >= 0 && cx < cols && cy < rows) acc[cy * cols + cx] += v; };
+    for (const n of nodes) {
+      const cx = Math.floor(n.x / cell), cy = Math.floor(n.y / cell);
+      const v = 0.35 + 2.2 * Math.pow(n.L, 1.6);
+      add(cx, cy, v);
+      if (n.L > 0.35) { // spill into neighbours, like a coarse sensor saturating
+        const rad = Math.round(1 + 6 * Math.pow(n.L, 2));
+        for (let dx = -rad; dx <= rad; dx++) for (let dy = -rad; dy <= rad; dy++) {
+          const d = Math.hypot(dx, dy); if (d === 0 || d > rad) continue;
+          add(cx + dx, cy + dy, v * Math.exp(-d * d / (rad * rad * 0.45)) * 0.5);
+        }
+      }
+    }
+    // Soft bloom layer under the raster.
+    ctx.save(); ctx.filter = 'blur(14px)'; ctx.globalCompositeOperation = 'lighter';
+    for (const n of nodes) if (n.L > 0.5) { ctx.globalAlpha = 0.5 * n.L; const r = 40 * n.L; ctx.drawImage(sprite(whiteRGB), n.x - r, n.y - r, 2 * r, 2 * r); }
+    ctx.restore();
+    for (let i = 0; i < acc.length; i++) {
+      const v = acc[i]; if (v <= 0.02) continue;
+      const a = Math.min(1, v);
+      ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+      ctx.fillRect((i % cols) * cell, Math.floor(i / cols) * cell, cell - 0.5, cell - 0.5);
+    }
+  })();
+
+  // Corridors between hubs, drawn like highways: faint, warm.
+  function corridors(ctx, alpha) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineWidth = 1.2;
+    for (let i = 0; i < hubs.length; i++) for (let j = i + 1; j < hubs.length; j++) {
+      const a = hubs[i], b = hubs[j]; const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d > 520) continue;
+      ctx.strokeStyle = `rgba(255,180,90,${(alpha * (1 - d / 600)).toFixed(3)})`;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo((a.x + b.x) / 2 + (b.y - a.y) * 0.08, (a.y + b.y) / 2 - (b.x - a.x) * 0.08, b.x, b.y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Fig. 2: lamp era.
+  (function () { const ctx = setup('c2'); corridors(ctx, 0.22); glow(ctx, {}); })();
+
+  // Route helpers. Walk from start toward target through plausible stops.
+  function nearest(x, y, pred) {
+    let best = null, bd = 1e9;
+    for (const n of nodes) { if (pred && !pred(n)) continue; const d = Math.hypot(n.x - x, n.y - y); if (d < bd) { bd = d; best = n; } }
+    return best;
+  }
+  const start = nearest(330, 400, n => !n.hub && n.year < 1900);
+  const target = nearest(1330, 430, n => !n.hub && n.year > 2000);
+  function walk(stops, wobble) {
+    const path = [start]; let cur = start;
+    for (let i = 1; i < stops; i++) {
+      const t = i / stops;
+      const gx = start.x + (target.x - start.x) * t + gauss() * wobble, gy = start.y + (target.y - start.y) * t + gauss() * wobble;
+      cur = nearest(gx, gy, n => n !== cur && n.L > 0.25); path.push(cur);
+    }
+    path.push(target); return path;
+  }
+  const playerPath = walk(4, 90), jevPath = walk(3, 60);
+
+  function drawRoute(ctx, path, rgb, upTo, dashed) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = `rgba(${rgb.join(',')},0.9)`; ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+    if (dashed) ctx.setLineDash([7, 7]);
+    ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i <= upTo; i++) ctx.lineTo(path[i].x, path[i].y); ctx.stroke();
+    ctx.setLineDash([]);
+    for (let i = 0; i <= upTo; i++) { const p = path[i]; ctx.fillStyle = `rgba(${rgb.join(',')},1)`; ctx.beginPath(); ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.globalCompositeOperation = 'source-over'; ctx.stroke(); ctx.globalCompositeOperation = 'lighter'; }
+    ctx.restore();
+  }
+  function label(ctx, x, y, text, dx, dy) {
+    ctx.save(); ctx.font = '600 17px "Public Sans", Arial, sans-serif'; ctx.fillStyle = '#e9eaec'; ctx.strokeStyle = 'rgba(0,0,0,0.9)'; ctx.lineWidth = 4; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + dx * 0.75, y + dy * 0.75); ctx.strokeStyle = 'rgba(233,234,236,0.7)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,0.9)'; ctx.textAlign = dx < 0 ? 'right' : 'left';
+    ctx.strokeText(text, x + dx, y + dy + 6); ctx.fillText(text, x + dx, y + dy + 6); ctx.restore();
+  }
+
+  // Fig. 3: race. Hubs visible from anywhere, small lights only near the player.
+  (function () {
+    const ctx = setup('c3');
+    const me = playerPath[1];
+    corridors(ctx, 0.16);
+    glow(ctx, { mul: n => { if (n.hub || n.L > 0.6) return 1; const d = Math.hypot(n.x - me.x, n.y - me.y); return d < 150 ? 1 : 0.22; } });
+    drawRoute(ctx, jevPath, eraRGB[0], 2, true);
+    drawRoute(ctx, playerPath, whiteRGB, 1, false);
+    // Reach ring around the player.
+    ctx.save(); ctx.strokeStyle = 'rgba(233,234,236,0.35)'; ctx.setLineDash([3, 6]); ctx.beginPath(); ctx.arc(me.x, me.y, 150, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    label(ctx, start.x, start.y, 'Swift v. Tyson, 1842', -40, 60);
+    label(ctx, me.x, me.y, 'Erie R. Co. v. Tompkins, 1938', 40, -70);
+    label(ctx, jevPath[2].x, jevPath[2].y, 'Jev, hop 2', 30, 60);
+    label(ctx, target.x, target.y, 'Shady Grove v. Allstate, 2010', -30, 90);
+    hubs.slice(0, 3).forEach((h, i) => label(ctx, h.x, h.y, hubNames[i], i % 2 ? 30 : -30, i % 2 ? 50 : -50));
+  })();
+
+  // Fig. 4: blackout. Top 20 hubs off; only lights near the player at full strength.
+  (function () {
+    const ctx = setup('c4');
+    const off = new Set(nodes.slice().sort((a, b) => b.c - a.c).slice(0, 20));
+    const me = playerPath[2];
+    glow(ctx, { mul: n => { if (off.has(n)) return 0; const d = Math.hypot(n.x - me.x, n.y - me.y); return d < 170 ? 1 : 0.09; } });
+    // Ember where each dark hub was.
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const h of off) { ctx.fillStyle = 'rgba(120,40,10,0.35)'; ctx.beginPath(); ctx.arc(h.x, h.y, 6, 0, Math.PI * 2); ctx.fill(); }
+    ctx.restore();
+    drawRoute(ctx, playerPath, whiteRGB, 2, false);
+    ctx.save(); ctx.strokeStyle = 'rgba(233,234,236,0.35)'; ctx.setLineDash([3, 6]); ctx.beginPath(); ctx.arc(me.x, me.y, 170, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    label(ctx, me.x, me.y, 'You, hop 2', 40, -60);
+    const h0 = hubs[0]; label(ctx, h0.x, h0.y, 'Twombly, switched off', 30, 50);
+  })();
+
+  // Fig. 5: standing on a hub. Zoom to its metro, draw its citation lines as streets.
+  (function () {
+    const ctx = setup('c5');
+    const h = hubs[1]; // Celotex-like
+    const scale = 3.6, ox = h.x - W / scale / 2, oy = h.y - H / scale / 2;
+    const near = nodes.filter(n => Math.hypot(n.x - h.x, n.y - h.y) < 150 && n !== h);
+    // Streets: lines from the hub to the cases that cite it, with a few cross streets.
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineWidth = 1;
+    for (const n of near) {
+      if (rnd() > 0.55) continue;
+      const c = eraRGB[era(n.year)];
+      ctx.strokeStyle = `rgba(${c.join(',')},${(0.08 + 0.25 * n.L).toFixed(3)})`;
+      ctx.beginPath(); ctx.moveTo((h.x - ox) * scale, (h.y - oy) * scale); ctx.lineTo((n.x - ox) * scale, (n.y - oy) * scale); ctx.stroke();
+    }
+    for (let i = 0; i < 140; i++) {
+      const a = near[Math.floor(rnd() * near.length)], b = near[Math.floor(rnd() * near.length)];
+      if (Math.hypot(a.x - b.x, a.y - b.y) > 45) continue;
+      const c = eraRGB[era(a.year)];
+      ctx.strokeStyle = `rgba(${c.join(',')},0.18)`; ctx.beginPath(); ctx.moveTo((a.x - ox) * scale, (a.y - oy) * scale); ctx.lineTo((b.x - ox) * scale, (b.y - oy) * scale); ctx.stroke();
+    }
+    ctx.restore();
+    glow(ctx, { scale, ox, oy, mul: n => (Math.hypot(n.x - h.x, n.y - h.y) < 260 ? 1 : 0) });
+    label(ctx, (h.x - ox) * scale, (h.y - oy) * scale, 'Celotex Corp. v. Catrett, 1986', 60, -90);
+  })();
+})();
+</script>
