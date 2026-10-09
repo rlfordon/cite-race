@@ -153,33 +153,61 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
   .pagebox { --ph: 70vh; }
   .tabs .filters { margin-left: 0; }
 }
-/* Phones: the opinion comes first and scrolls like a page; a bar pinned to the top carries the score, the target
-   and the find box; the trail drops below the citator. */
+/* Phones: the opinion scrolls like a page under a bar pinned to the top. The bar carries the score and the target,
+   and opens the trail and the citator as sheets over the opinion, so the reader keeps their place. */
 .mbar { display: none; }
+.sheetonly, #findDone, .jevnow { display: none; }
 @media (max-width: 820px) {
-  aside { order: 2; scroll-margin-top: 96px; }
   .mbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; position: sticky; top: 0; z-index: 10; background: var(--paper);
     margin-inline: -16px; padding: calc(6px + env(safe-area-inset-top)) 16px 6px; border-bottom: 1px solid var(--toner); }
   .mstat { display: flex; align-items: baseline; gap: 10px; font-size: 13px; font-variant-numeric: tabular-nums; }
   .mstat .tbtn { display: block; flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mstat .tbtn b { display: inline; }
   .mstat > span { flex: none; }
-  .mstat button#mTrail { flex: none; font-size: 13px; padding: 2px 8px; }
+  .mtools { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; }
+  .mtools button { font-size: 13px; padding: 6px 4px; white-space: nowrap; }
+  .mtools #mFind { padding-inline: 12px; }
   .mbar .find input { flex: 1; width: auto; }
-  .mbar .find button { padding: 2px 12px; }
+  .mbar .find button { padding: 4px 10px; }
+  .mbar .find label { display: none; }
+  .mbar:not(.finding) .find, .mbar.finding .mtools { display: none; }
+  .mbar #findDone { display: inline-block; font-size: 13px; }
+  .jevnow { display: block; margin: 0; font-size: 13.5px; }
   #page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .pagebox { overflow: visible; }
   #opinion { height: auto; column-count: auto; column-rule: none; transform: none !important; }
   .pagenav { display: none; }
-  .list ul { height: auto; min-height: 0; overflow: visible; }
+  /* In the citator sheet the tabs, filters and hint stay put and the list scrolls. */
+  #sheet .citator { flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: none; padding-top: 0; }
+  #sheet .tabs { padding-bottom: 6px; border-bottom: 1px solid var(--toner); }
+  #sheet .tabs .filters { order: 3; flex-basis: 100%; display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 6px; }
+  #sheet .filters .lbl { display: none; }
+  #sheet .filters input { width: 100%; }
+  #sheet .list:not([hidden]) { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #sheet .list ul { flex: 1; height: auto; min-height: 0; }
   /* iOS zooms into any field under 16px when it takes focus. */
   input { font-size: 16px !important; }
 }
-/* Touch screens: a tap on a case opens a preview sheet first; nothing hovers. */
-dialog#sheet { border: none; border-top: 2px solid var(--toner); margin: auto 0 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
-  width: 100%; max-width: 100%; max-height: 75vh; box-sizing: border-box; color: var(--toner); background: var(--paper); font-family: var(--serif); }
+/* Sheets rise from the bottom: the citator and case preview (#sheet) and the trail (#trailSheet). On touch screens a tap on
+   a case previews it first; nothing hovers. */
+dialog#sheet, dialog#trailSheet { border: none; border-top: 2px solid var(--toner); margin: auto 0 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  width: 100%; max-width: 100%; max-height: 82vh; box-sizing: border-box; color: var(--toner); background: var(--paper); font-family: var(--serif); }
 dialog#sheet[open] { display: flex; flex-direction: column; gap: 10px; }
-dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
+dialog#sheet.listing { height: 82vh; }
+dialog#sheet::backdrop, dialog#trailSheet::backdrop { background: rgba(0,0,0,0.35); }
+#sheet .sheetlist { display: none; }
+#sheet.listing:not(.previewing) .sheetlist { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#sheet .sheetprev { display: none; }
+#sheet.previewing .sheetprev { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+#sheet .back { display: none; border: none; padding: 2px 0; font-size: 13px; color: var(--pen); background: none; text-align: left; align-self: start; }
+#sheet.listing .back { display: block; }
+#sheet .sheetonly, #trailSheet .sheetonly { display: inline-block; }
+.x { font-size: 13px; padding: 4px 10px; }
+.tabs .x { margin-left: auto; border: 1px solid var(--toner); padding: 4px 10px; text-transform: none; letter-spacing: 0; font-weight: 400; }
+aside .shead { display: flex; justify-content: space-between; align-items: baseline; }
+#trailSheet aside { position: static; max-height: none; overflow: visible; }
+#trailSheet .shead { border-bottom: 1px solid var(--toner); padding-bottom: 6px; }
+#sheet.listing #sheetBody { flex: 1 1 auto; }
 #sheetBody { flex: 0 1 auto; min-height: 0; overflow: auto; font-size: 14.5px; display: grid; gap: 6px; align-content: start; }
 #sheetBody .caption { margin-block: 0 4px; }
 #sheetBody p { margin: 0; text-align: left; hyphens: auto; }
@@ -201,18 +229,24 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
   <div class="peekbody" id="peekBody"></div>
   <p class="hint">Syllabus and opening paragraphs only. Its citations stay hidden, so the route is yours to find.</p>
 </dialog>
-<dialog id="sheet" aria-label="Case preview">
-  <div id="sheetBody"></div>
-  <div class="sheetbtns"><button type="button" id="sheetCancel">Stay here</button><button type="button" id="sheetGo">Go to this case</button></div>
+<dialog id="sheet" aria-label="Cases">
+  <div class="sheetlist" id="sheetList"></div>
+  <div class="sheetprev" id="sheetPrev">
+    <button type="button" class="back" id="sheetBack">&#8249; Back to the list</button>
+    <div id="sheetBody"></div>
+    <div class="sheetbtns"><button type="button" id="sheetCancel">Stay here</button><button type="button" id="sheetGo">Go to this case</button></div>
+  </div>
 </dialog>
+<dialog id="trailSheet" aria-label="Your trail"></dialog>
 <div class="card" id="card" hidden></div>
 <div class="wrap">
   <aside id="side" hidden>
-    <h2>Your trail</h2>
+    <div class="shead"><h2>Your trail</h2><button type="button" class="x sheetonly" id="trailClose">Close</button></div>
     <div class="score"><span>Hop <b id="hopN">0</b>, par <span id="parN">–</span></span><span id="clock">00:00</span></div>
     <svg id="ladder" viewBox="0 0 300 10" role="img" aria-label="Trail of cases, time across and hops down"></svg>
     <div class="target"><span class="hint">Target</span><button type="button" class="tbtn" id="btnTarget"><b id="targetName">–</b><span id="targetCite" class="hint"></span></button><span class="hint">Click to read about it.</span></div>
     <p class="hint">Time runs left to right. Each hop is a row. <span class="pen">Blue</span> is you, <span class="red">red</span> is Jev. You both move at once, so Jev's hop appears only after yours; hover a red dot for its case. The dashed line is the target's year. Click a row to return to that case.</p>
+    <p class="jevnow" id="jevNow" hidden></p>
     <div class="done" id="done" hidden></div>
     <div class="row"><button id="btnNew">Back to the docket</button></div>
   </aside>
@@ -235,7 +269,13 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
     </div>
     <div id="page" hidden>
       <div class="mbar" id="mbar">
-        <div class="mstat"><span>Hop <b data-of="hopN">0</b>, par <span data-of="parN">–</span></span><button type="button" class="tbtn" id="mTarget">To <b data-of="targetName">–</b></button><span data-of="clock">00:00</span><button type="button" id="mTrail">Trail</button></div>
+        <div class="mstat"><span>Hop <b data-of="hopN">0</b>, par <span data-of="parN">–</span></span><button type="button" class="tbtn" id="mTarget">To <b data-of="targetName">–</b></button><span data-of="clock">00:00</span></div>
+        <div class="mtools" id="mTools">
+          <button type="button" id="mTrail">Trail</button>
+          <button type="button" id="mCites">Cites <b data-of="citesN">0</b></button>
+          <button type="button" id="mCited">Cited by <b data-of="citedN">0</b></button>
+          <button type="button" id="mFind">Find</button>
+        </div>
       </div>
       <div class="runhead"><span id="rhName"></span><span id="rhCite"></span></div>
       <div class="citeas" id="citeas"></div>
@@ -248,6 +288,7 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
           <span id="findN" class="hint"></span>
           <button id="findPrev" aria-label="Previous match" disabled>&#8249;</button>
           <button id="findNext" aria-label="Next match" disabled>&#8250;</button>
+          <button type="button" id="findDone">Done</button>
         </div>
         <div class="pages">
           <button id="pgPrev" aria-label="Previous page">&#8249; Previous</button>
@@ -261,10 +302,11 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
           <button role="tab" id="tabCites" aria-selected="false">Cites, <span id="citesN">0</span></button>
           <button role="tab" id="tabCited" aria-selected="true">Cited by, <span id="citedN">0</span></button>
           <div class="filters">
-            <label>Years <input id="fFrom" type="number" placeholder="from"></label>
-            <label><input id="fTo" type="number" placeholder="to"></label>
-            <label>Word <input id="fWord" type="search" placeholder="in case name"></label>
+            <label><span class="lbl">Years </span><input id="fFrom" type="number" placeholder="from" aria-label="From year"></label>
+            <label><input id="fTo" type="number" placeholder="to" aria-label="To year"></label>
+            <label><span class="lbl">Word </span><input id="fWord" type="search" placeholder="in case name" aria-label="Word in case name"></label>
           </div>
+          <button type="button" class="x sheetonly" id="citClose">Close</button>
         </div>
         <div class="list" id="panelCites" hidden>
           <p class="hint">Cases this opinion cites. Clicking goes back in time.</p>
@@ -363,6 +405,9 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
       hit.addEventListener('click', () => { if (!state.finished && i < player.length - 1) goBack(i); });
     });
     trail(jev, '#c8201c', true, 6);
+    // Phones cannot hover a red dot, so Jev's latest case is also written out.
+    const jl = jev.length > 1 ? jev[jev.length - 1] : null, jn = $('jevNow'); jn.hidden = !jl; jn.textContent = '';
+    if (jl) { const k = document.createElement('span'); k.className = 'red'; k.textContent = `Jev, hop ${jev.length - 1}: `; jn.append(k, `${jl.name} (${jl.year})`); }
     trail(player, '#1f3fbf', false, 0);
     put('hopN', String(Math.max(0, player.length - 1)));
   }
@@ -459,12 +504,14 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
   $('findBox').addEventListener('input', () => { clearTimeout(findTimer); findTimer = setTimeout(runFind, 220); });
   $('findBox').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); goToFind(findAt + (e.shiftKey ? -1 : 1)); }
-    if (e.key === 'Escape') { $('findBox').value = ''; clearFind(); $('findBox').blur(); }
+    if (e.key === 'Escape') endFind();
   });
+  function endFind() { $('findBox').value = ''; clearFind(); $('findBox').blur(); $('mbar').classList.remove('finding'); }
+  $('findDone').addEventListener('click', endFind);
   $('findNext').addEventListener('click', () => goToFind(findAt + 1));
   $('findPrev').addEventListener('click', () => goToFind(findAt - 1));
   document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && !$('page').hidden) { e.preventDefault(); $('findBox').focus(); $('findBox').select(); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && !$('page').hidden) { e.preventDefault(); $('mbar').classList.add('finding'); $('findBox').focus(); $('findBox').select(); }
   });
   window.addEventListener('resize', () => { if (!$('page').hidden) layoutPages(); });
   document.fonts && document.fonts.ready.then(() => { if (!$('page').hidden) layoutPages(); });
@@ -488,8 +535,8 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
   function renderLists() {
     const c = state.cases[current().id]; if (!c) return;
     const cites = c.cites.filter(passes), cited = c.cited_by.filter(passes);
-    $('citesN').textContent = cites.length === c.cites.length ? String(c.cites.length) : `${cites.length} of ${c.cites.length}`;
-    $('citedN').textContent = cited.length === c.cited_by.length ? String(c.cited_by.length) : `${cited.length} of ${c.cited_by.length}`;
+    put('citesN', cites.length === c.cites.length ? String(c.cites.length) : `${cites.length} of ${c.cites.length}`);
+    put('citedN', cited.length === c.cited_by.length ? String(c.cited_by.length) : `${cited.length} of ${c.cited_by.length}`);
     const ul1 = $('citesList'); ul1.innerHTML = ''; cites.forEach(n => ul1.appendChild(li(n)));
     const ul2 = $('citedList'); ul2.innerHTML = ''; cited.forEach(n => ul2.appendChild(li(n)));
     markTaken();
@@ -534,7 +581,7 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
     if (String(c.id) === String(state.puzzle.target.id)) finish();
   }
   function goBack(i) {
-    state.player = state.player.slice(0, i + 1);
+    state.player = state.player.slice(0, i + 1); closeSheets();
     renderCase(state.player[i]); renderLadder(); window.scrollTo({ top: 0 });
   }
 
@@ -543,7 +590,7 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
     const hops = state.player.length - 1, par = state.puzzle.par;
     const jevDone = state.jev.length && String(state.jev[state.jev.length - 1].id) === String(state.puzzle.target.id);
     const box = $('done'); box.hidden = false;
-    if (narrow.matches) $('side').scrollIntoView();
+    if (narrow.matches && !$('trailSheet').open) $('trailSheet').showModal();
     const verdict = hops <= par - 2 ? 'Eagle.' : hops === par - 1 ? 'Birdie.' : hops === par ? 'Par.' : hops === par + 1 ? 'Bogey.' : `${hops - par} over par.`;
     box.innerHTML = `<b>Reached ${state.puzzle.target.name} in ${hops} hops. ${verdict}</b><span>Par ${par}. Jev ${jevDone ? `got there in ${state.jev.length - 1}` : `is at ${state.jev[state.jev.length - 1].name} after ${state.jev.length - 1}`}.</span><span class="loading">Looking up the shortest route…</span>`;
     try {
@@ -621,7 +668,7 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
     } catch (e) { if (cardFor === id) card.innerHTML = `<p class="err">Could not load it. ${e.message}</p>`; }
   }
   function hideCard() { clearTimeout(cardTimer); cardTimer = null; cardFor = null; card.hidden = true; }
-  function armCard(item) { if (touch.matches) return; if (document.activeElement === $('findBox')) return; clearTimeout(cardTimer); cardTimer = setTimeout(() => showCard(item), 350); }
+  function armCard(item) { if (touch.matches || narrow.matches) return; if (document.activeElement === $('findBox')) return; clearTimeout(cardTimer); cardTimer = setTimeout(() => showCard(item), 350); }
   document.addEventListener('mouseover', e => { const item = e.target.closest('#citesList li, #citedList li'); if (!item) return; if (item.contains(e.relatedTarget)) return; armCard(item); });
   document.addEventListener('mouseout', e => { const item = e.target.closest('#citesList li, #citedList li'); if (!item || item.contains(e.relatedTarget)) return; hideCard(); });
   document.addEventListener('focusin', e => { const item = e.target.closest('#citesList li, #citedList li'); if (item) armCard(item); });
@@ -629,11 +676,13 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
   document.addEventListener('scroll', hideCard, true);
 
   // Touch screens have no hover card, so a tap previews the case and a second tap commits the hop.
-  const sheet = $('sheet'); let sheetFor = null;
+  // On a phone the same sheet also holds the citator, and the preview has a way back to the list.
+  const sheet = $('sheet'), trailSheet = $('trailSheet'); let sheetFor = null;
   async function openSheet(id) {
-    sheetFor = id; $('sheetGo').disabled = true;
+    sheetFor = id; $('sheetGo').disabled = true; sheet.classList.add('previewing');
     $('sheetBody').innerHTML = '<p class="loading">Pulling the volume…</p>'; $('sheetBody').scrollTop = 0;
-    sheet.showModal(); $('sheetGo').focus();
+    if (!sheet.open) sheet.showModal();
+    $('sheetGo').focus();
     try {
       const c = await loadCase(id); if (sheetFor !== id) return;
       $('sheetBody').innerHTML = ''; $('sheetBody').appendChild(summaryOf(c, 'brief')); $('sheetGo').disabled = false;
@@ -641,14 +690,28 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
   }
   $('sheetGo').addEventListener('click', () => { const id = sheetFor; sheet.close(); if (id) hop(id); });
   $('sheetCancel').addEventListener('click', () => sheet.close());
-  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
-  sheet.addEventListener('close', () => { sheetFor = null; });
+  $('sheetBack').addEventListener('click', () => { sheetFor = null; sheet.classList.remove('previewing'); });
+  $('citClose').addEventListener('click', () => sheet.close());
+  $('trailClose').addEventListener('click', () => trailSheet.close());
+  [sheet, trailSheet].forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+  sheet.addEventListener('close', () => { sheetFor = null; sheet.classList.remove('previewing'); });
+  function closeSheets() { [sheet, trailSheet].forEach(d => { if (d.open) d.close(); }); }
+  function openCitator(which) { showTab(which); sheet.classList.remove('previewing'); if (!sheet.open) sheet.showModal(); }
 
-  // The phone bar: target and trail buttons, and the find box moves up into it.
+  // The phone bar: the target, the trail and citator sheets, and the find box, which takes the button row's place.
   $('mTarget').addEventListener('click', openPeek);
-  $('mTrail').addEventListener('click', () => $('side').scrollIntoView({ behavior: 'smooth' }));
-  function placeFind() { const f = $('find'); if (narrow.matches) $('mbar').appendChild(f); else document.querySelector('.pagenav').prepend(f); }
-  narrow.addEventListener('change', placeFind); placeFind();
+  $('mTrail').addEventListener('click', () => trailSheet.showModal());
+  $('mCites').addEventListener('click', () => openCitator('cites'));
+  $('mCited').addEventListener('click', () => openCitator('cited'));
+  $('mFind').addEventListener('click', () => { $('mbar').classList.add('finding'); $('findBox').focus(); });
+  // On a phone the find box, the citator and the trail move into the bar and the sheets; on a wider screen they move back.
+  function placeParts() {
+    const find = $('find'), cit = document.querySelector('.citator'), side = $('side');
+    closeSheets();
+    if (narrow.matches) { $('mbar').appendChild(find); $('sheetList').appendChild(cit); trailSheet.appendChild(side); sheet.classList.add('listing'); }
+    else { document.querySelector('.pagenav').prepend(find); $('page').appendChild(cit); document.querySelector('.wrap').prepend(side); sheet.classList.remove('listing'); $('mbar').classList.remove('finding'); }
+  }
+  narrow.addEventListener('change', placeParts); placeParts();
 
   // Start screen.
   // The docket: every puzzle is a row, and a row is one click to play.
@@ -703,6 +766,7 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
     state.timer = setInterval(() => { const s = Math.floor((Date.now() - state.t0) / 1000); put('clock', `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`); }, 500);
   }
   function reset() {
+    closeSheets(); endFind();
     clearInterval(state.timer); state.player = []; state.jev = []; state.finished = false; $('done').hidden = true; put('clock', '00:00');
     $('page').hidden = true; $('side').hidden = true; $('start').hidden = false; document.querySelector('.wrap').classList.add('docketing');
     renderLadder(); loadDocket(); window.scrollTo({ top: 0 });
@@ -711,7 +775,8 @@ dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
   document.addEventListener('click', e => {
     const a = e.target.closest('a.cite'); if (!a) return; e.preventDefault();
     if (a.classList.contains('notext') || !allowed(a)) return;
-    if (touch.matches && !a.classList.contains('taken') && !state.finished) openSheet(a.dataset.id); else hop(a.dataset.id);
+    if (touch.matches && !a.classList.contains('taken') && !state.finished) openSheet(a.dataset.id);
+    else { closeSheets(); hop(a.dataset.id); }
   });
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', loadDocket));
   ['fFrom', 'fTo', 'fWord'].forEach(id => $(id).addEventListener('input', renderLists));
