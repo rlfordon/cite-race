@@ -472,14 +472,14 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
     try {
       const list = await api(`/api/starters?mode=${state.mode}`);
       body.innerHTML = '';
-      const groups = { 'warm-up': 'Warm-ups, one citation apart', 'starter': 'Two hops', 'three-hop': 'Three hops' };
+      const groups = { 'warm-up': 'Warm-ups, one citation apart', 'starter': 'Starters', 'three-hop': 'Longer trips' };
       let no = 0;
       for (const g in groups) {
         const items = list.filter(s => s.group === g); if (!items.length) continue;
         const h = document.createElement('tr'); h.className = 'grp'; const hc = td(null, groups[g]); hc.colSpan = 5; h.appendChild(hc); body.appendChild(h);
         items.forEach(s => body.appendChild(pickRow([td('no', String(++no)), caseCell('from', s.start), caseCell('to', s.target), td('theme', s.theme), td('par', String(s.par))], `pair=${s.pair}`)));
       }
-      const r = pickRow([td('no', ''), td('from', 'A random pair'), td('to', 'drawn fresh each time'), td('theme', 'Harder: four to five hops apart'), td('par', '6 to 7')], null);
+      const r = pickRow([td('no', ''), td('from', 'A random pair'), td('to', 'drawn fresh each time'), td('theme', 'Harder. A new pair every time'), td('par', '6 to 7')], null);
       r.classList.add('random'); body.appendChild(r);
     } catch (e) {
       body.innerHTML = ''; const tr = document.createElement('tr'); const c = td('err', `Could not load the docket. ${e.message}`); c.colSpan = 5; tr.appendChild(c); body.appendChild(tr);
