@@ -1,0 +1,808 @@
+[
+ {
+  "group": "warm-up",
+  "theme": "Separate to diverse",
+  "older": {
+   "id": 8478,
+   "name": "Plessy v. Ferguson",
+   "cite": "163 U.S. 537",
+   "year": 1896,
+   "date": "1896-05-18",
+   "cited_all": 1036,
+   "cited_scotus": 169,
+   "has_text": true,
+   "cl_id": 94508
+  },
+  "newer": {
+   "id": 25921,
+   "name": "Grutter v. Bollinger",
+   "cite": "539 U.S. 306",
+   "year": 2003,
+   "date": "2003-06-23",
+   "cited_all": 670,
+   "cited_scotus": 47,
+   "has_text": true,
+   "cl_id": 130155
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "warm-up",
+  "theme": "Clear and present to imminent",
+  "older": {
+   "id": 12867,
+   "name": "Schenck v. United States",
+   "cite": "249 U.S. 47",
+   "year": 1919,
+   "date": "1919-03-03",
+   "cited_all": 1082,
+   "cited_scotus": 157,
+   "has_text": true,
+   "cl_id": 99296
+  },
+  "newer": {
+   "id": 20480,
+   "name": "Brandenburg v. Ohio",
+   "cite": "395 U.S. 444",
+   "year": 1969,
+   "date": "1969-06-09",
+   "cited_all": 1383,
+   "cited_scotus": 135,
+   "has_text": true,
+   "cl_id": 107965
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "warm-up",
+  "theme": "Counsel to warnings",
+  "older": {
+   "id": 32876,
+   "name": "Gideon v. Wainwright",
+   "cite": "372 U.S. 335",
+   "year": 1963,
+   "date": "1963-03-18",
+   "cited_all": 15597,
+   "cited_scotus": 529,
+   "has_text": true,
+   "cl_id": 8954562
+  },
+  "newer": {
+   "id": 19928,
+   "name": "Miranda v. Arizona",
+   "cite": "384 U.S. 436",
+   "year": 1966,
+   "date": "1966-06-13",
+   "cited_all": 57532,
+   "cited_scotus": 664,
+   "has_text": true,
+   "cl_id": 107252
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "warm-up",
+  "theme": "Privacy to marriage",
+  "older": {
+   "id": 19791,
+   "name": "Griswold v. Connecticut",
+   "cite": "381 U.S. 479",
+   "year": 1965,
+   "date": "1965-06-07",
+   "cited_all": 4385,
+   "cited_scotus": 257,
+   "has_text": true,
+   "cl_id": 107082
+  },
+  "newer": {
+   "id": 27938,
+   "name": "Obergefell v. Hodges",
+   "cite": "576 U.S. 644",
+   "year": 2015,
+   "date": "2015-06-26",
+   "cited_all": 882,
+   "cited_scotus": 37,
+   "has_text": true,
+   "cl_id": 2812209
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "warm-up",
+  "theme": "Judicial review to the tapes",
+  "older": {
+   "id": 115,
+   "name": "Marbury v. Madison",
+   "cite": "5 U.S. 137",
+   "year": 1803,
+   "date": "1803-02-24",
+   "cited_all": 6055,
+   "cited_scotus": 532,
+   "has_text": true,
+   "cl_id": 84759
+  },
+  "newer": {
+   "id": 21478,
+   "name": "United States v. Nixon",
+   "cite": "418 U.S. 683",
+   "year": 1974,
+   "date": "1974-07-24",
+   "cited_all": 4088,
+   "cited_scotus": 184,
+   "has_text": true,
+   "cl_id": 109101
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "warm-up",
+  "theme": "Wheat to health care",
+  "older": {
+   "id": 16871,
+   "name": "Wickard v. Filburn",
+   "cite": "317 U.S. 111",
+   "year": 1942,
+   "date": "1942-11-09",
+   "cited_all": 1220,
+   "cited_scotus": 135,
+   "has_text": true,
+   "cl_id": 103716
+  },
+  "newer": {
+   "id": 26922,
+   "name": "National Federation of Independent Business v. Sebelius",
+   "cite": "567 U.S. 519",
+   "year": 2012,
+   "date": "2012-06-28",
+   "cited_all": 1041,
+   "cited_scotus": 37,
+   "has_text": true,
+   "cl_id": 809122
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "warm-up",
+  "theme": "Prior restraint",
+  "older": {
+   "id": 15148,
+   "name": "Near v. Minnesota Ex Rel. Olson",
+   "cite": "283 U.S. 697",
+   "year": 1931,
+   "date": "1931-06-01",
+   "cited_all": 1634,
+   "cited_scotus": 268,
+   "has_text": true,
+   "cl_id": 101773
+  },
+  "newer": {
+   "id": 20824,
+   "name": "New York Times Co. v. United States",
+   "cite": "403 U.S. 713",
+   "year": 1971,
+   "date": "1971-06-21",
+   "cited_all": 1169,
+   "cited_scotus": 111,
+   "has_text": true,
+   "cl_id": 108384
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "warm-up",
+  "theme": "Wartime detention",
+  "older": {
+   "id": 17179,
+   "name": "Korematsu v. United States",
+   "cite": "323 U.S. 214",
+   "year": 1945,
+   "date": "1945-02-26",
+   "cited_all": 830,
+   "cited_scotus": 140,
+   "has_text": true,
+   "cl_id": 104040
+  },
+  "newer": {
+   "id": 26025,
+   "name": "Hamdi v. Rumsfeld",
+   "cite": "542 U.S. 507",
+   "year": 2004,
+   "date": "2004-06-28",
+   "cited_all": 3188,
+   "cited_scotus": 55,
+   "has_text": true,
+   "cl_id": 137001
+  },
+  "shortest": {
+   "any": 1,
+   "back": 1,
+   "forward": 1
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Civil procedure, start to finish",
+  "older": {
+   "id": 16225,
+   "name": "Erie Railroad v. Tompkins",
+   "cite": "304 U.S. 64",
+   "year": 1938,
+   "date": "1938-04-25",
+   "cited_all": 18685,
+   "cited_scotus": 419,
+   "has_text": true,
+   "cl_id": 103012
+  },
+  "newer": {
+   "id": 26452,
+   "name": "Bell Atlantic Corp. v. Twombly",
+   "cite": "550 U.S. 544",
+   "year": 2007,
+   "date": "2007-05-21",
+   "cited_all": 155785,
+   "cited_scotus": 35,
+   "has_text": true,
+   "cl_id": 145730
+  },
+  "shortest": {
+   "any": 2,
+   "back": 3,
+   "forward": 3
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "K to K",
+  "older": {
+   "id": 20164,
+   "name": "Katz v. United States",
+   "cite": "389 U.S. 347",
+   "year": 1967,
+   "date": "1967-12-18",
+   "cited_all": 13203,
+   "cited_scotus": 369,
+   "has_text": true,
+   "cl_id": 107564
+  },
+  "newer": {
+   "id": 26877,
+   "name": "Kelo v. City of New London",
+   "cite": "545 U.S. 469",
+   "year": 2005,
+   "date": "2005-06-23",
+   "cited_all": 602,
+   "cited_scotus": 10,
+   "has_text": true,
+   "cl_id": 799984
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Armbands to super PACs",
+  "older": {
+   "id": 20386,
+   "name": "Tinker v. Des Moines Independent Community School District",
+   "cite": "393 U.S. 503",
+   "year": 1969,
+   "date": "1969-02-24",
+   "cited_all": 3252,
+   "cited_scotus": 204,
+   "has_text": true,
+   "cl_id": 107841
+  },
+  "newer": {
+   "id": 16,
+   "name": "Citizens United v. Federal Election Commission",
+   "cite": "558 U.S. 310",
+   "year": 2010,
+   "date": "2010-01-21",
+   "cited_all": 1728,
+   "cited_scotus": 74,
+   "has_text": true,
+   "cl_id": 1741
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "The political thicket",
+  "older": {
+   "id": 19233,
+   "name": "Baker v. Carr",
+   "cite": "369 U.S. 186",
+   "year": 1962,
+   "date": "1962-03-26",
+   "cited_all": 6203,
+   "cited_scotus": 354,
+   "has_text": true,
+   "cl_id": 106366
+  },
+  "newer": {
+   "id": 25640,
+   "name": "Bush v. Gore",
+   "cite": "531 U.S. 98",
+   "year": 2000,
+   "date": "2000-12-12",
+   "cited_all": 555,
+   "cited_scotus": 13,
+   "has_text": true,
+   "cl_id": 118395
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Exclusion to location",
+  "older": {
+   "id": 19168,
+   "name": "Mapp v. Ohio",
+   "cite": "367 U.S. 643",
+   "year": 1961,
+   "date": "1961-10-09",
+   "cited_all": 9113,
+   "cited_scotus": 402,
+   "has_text": true,
+   "cl_id": 106285
+  },
+  "newer": {
+   "id": 28227,
+   "name": "Carpenter v. United States",
+   "cite": "585 U.S. 296",
+   "year": 2018,
+   "date": "2018-06-22",
+   "cited_all": 1161,
+   "cited_scotus": 6,
+   "has_text": true,
+   "cl_id": 4510032
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Summary judgment to plausibility",
+  "older": {
+   "id": 23932,
+   "name": "Celotex Corp. v. Catrett, Administratrix of the Estate of Catrett",
+   "cite": "477 U.S. 317",
+   "year": 1986,
+   "date": "1986-06-25",
+   "cited_all": 122464,
+   "cited_scotus": 35,
+   "has_text": true,
+   "cl_id": 111722
+  },
+  "newer": {
+   "id": 26592,
+   "name": "Ashcroft v. Iqbal",
+   "cite": "556 U.S. 662",
+   "year": 2009,
+   "date": "2009-05-18",
+   "cited_all": 159004,
+   "cited_scotus": 44,
+   "has_text": true,
+   "cl_id": 145875
+  },
+  "shortest": {
+   "any": 2,
+   "back": 3,
+   "forward": 3
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Laundries to juries",
+  "older": {
+   "id": 6022,
+   "name": "Yick Wo v. Hopkins",
+   "cite": "118 U.S. 356",
+   "year": 1886,
+   "date": "1886-05-10",
+   "cited_all": 3814,
+   "cited_scotus": 330,
+   "has_text": true,
+   "cl_id": 91704
+  },
+  "newer": {
+   "id": 23872,
+   "name": "Batson v. Kentucky",
+   "cite": "476 U.S. 79",
+   "year": 1986,
+   "date": "1986-04-30",
+   "cited_all": 16291,
+   "cited_scotus": 167,
+   "has_text": true,
+   "cl_id": 111662
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Prayer to peyote",
+  "older": {
+   "id": 19293,
+   "name": "Engel v. Vitale",
+   "cite": "370 U.S. 421",
+   "year": 1962,
+   "date": "1962-06-25",
+   "cited_all": 800,
+   "cited_scotus": 105,
+   "has_text": true,
+   "cl_id": 106443
+  },
+  "newer": {
+   "id": 24571,
+   "name": "Employment Div., Dept. of Human Resources of Ore. v. Smith",
+   "cite": "494 U.S. 872",
+   "year": 1990,
+   "date": "1990-04-17",
+   "cited_all": 2579,
+   "cited_scotus": 112,
+   "has_text": true,
+   "cl_id": 112404
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Women's hours to 3.2 beer",
+  "older": {
+   "id": 10568,
+   "name": "Muller v. Oregon",
+   "cite": "208 U.S. 412",
+   "year": 1908,
+   "date": "1908-02-24",
+   "cited_all": 342,
+   "cited_scotus": 65,
+   "has_text": true,
+   "cl_id": 96786
+  },
+  "newer": {
+   "id": 21918,
+   "name": "Craig v. Boren",
+   "cite": "429 U.S. 190",
+   "year": 1976,
+   "date": "1976-12-20",
+   "cited_all": 2163,
+   "cited_scotus": 210,
+   "has_text": true,
+   "cl_id": 109570
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ },
+ {
+  "group": "starter",
+  "theme": "Bedrooms to cell sites",
+  "older": {
+   "id": 23948,
+   "name": "Bowers v. Hardwick",
+   "cite": "478 U.S. 186",
+   "year": 1986,
+   "date": "1986-09-11",
+   "cited_all": 955,
+   "cited_scotus": 45,
+   "has_text": true,
+   "cl_id": 111738
+  },
+  "newer": {
+   "id": 28227,
+   "name": "Carpenter v. United States",
+   "cite": "585 U.S. 296",
+   "year": 2018,
+   "date": "2018-06-22",
+   "cited_all": 1161,
+   "cited_scotus": 6,
+   "has_text": true,
+   "cl_id": 4510032
+  },
+  "shortest": {
+   "any": 2,
+   "back": 4,
+   "forward": 4
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "Citizenship to marriage",
+  "older": {
+   "id": 2037,
+   "name": "Dred Scott v. Sandford",
+   "cite": "60 U.S. 393",
+   "year": 1857,
+   "date": "1857-03-18",
+   "cited_all": 495,
+   "cited_scotus": 113,
+   "has_text": true,
+   "cl_id": 87116
+  },
+  "newer": {
+   "id": 20092,
+   "name": "Loving v. Virginia",
+   "cite": "388 U.S. 1",
+   "year": 1967,
+   "date": "1967-06-12",
+   "cited_all": 2155,
+   "cited_scotus": 209,
+   "has_text": true,
+   "cl_id": 107480
+  },
+  "shortest": {
+   "any": 2,
+   "back": 3,
+   "forward": 3
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "Presence to cell towers",
+  "older": {
+   "id": 4187,
+   "name": "Pennoyer v. Neff",
+   "cite": "95 U.S. 714",
+   "year": 1878,
+   "date": "1878-01-21",
+   "cited_all": 3340,
+   "cited_scotus": 186,
+   "has_text": true,
+   "cl_id": 89656
+  },
+  "newer": {
+   "id": 28227,
+   "name": "Carpenter v. United States",
+   "cite": "585 U.S. 296",
+   "year": 2018,
+   "date": "2018-06-22",
+   "cited_all": 1161,
+   "cited_scotus": 6,
+   "has_text": true,
+   "cl_id": 4510032
+  },
+  "shortest": {
+   "any": 3,
+   "back": 3,
+   "forward": 3
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "Holmes to Brandeis",
+  "older": {
+   "id": 14505,
+   "name": "Buck v. Bell",
+   "cite": "274 U.S. 200",
+   "year": 1927,
+   "date": "1927-05-02",
+   "cited_all": 278,
+   "cited_scotus": 34,
+   "has_text": true,
+   "cl_id": 101076
+  },
+  "newer": {
+   "id": 16225,
+   "name": "Erie Railroad v. Tompkins",
+   "cite": "304 U.S. 64",
+   "year": 1938,
+   "date": "1938-04-25",
+   "cited_all": 18685,
+   "cited_scotus": 419,
+   "has_text": true,
+   "cl_id": 103012
+  },
+  "shortest": {
+   "any": 3,
+   "back": null,
+   "forward": null
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "State action to phone booths",
+  "older": {
+   "id": 5303,
+   "name": "Civil Rights Cases",
+   "cite": "109 U.S. 3",
+   "year": 1883,
+   "date": "1883-10-15",
+   "cited_all": 1043,
+   "cited_scotus": 128,
+   "has_text": true,
+   "cl_id": 90897
+  },
+  "newer": {
+   "id": 20164,
+   "name": "Katz v. United States",
+   "cite": "389 U.S. 347",
+   "year": 1967,
+   "date": "1967-12-18",
+   "cited_all": 13203,
+   "cited_scotus": 369,
+   "has_text": true,
+   "cl_id": 107564
+  },
+  "shortest": {
+   "any": 3,
+   "back": 3,
+   "forward": 3
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "Experts to arms",
+  "older": {
+   "id": 25039,
+   "name": "Daubert v. Merrell Dow Pharmaceuticals, Inc.",
+   "cite": "509 U.S. 579",
+   "year": 1993,
+   "date": "1993-06-28",
+   "cited_all": 21460,
+   "cited_scotus": 35,
+   "has_text": true,
+   "cl_id": 112903
+  },
+  "newer": {
+   "id": 26498,
+   "name": "District of Columbia v. Heller",
+   "cite": "554 U.S. 570",
+   "year": 2008,
+   "date": "2008-06-26",
+   "cited_all": 3153,
+   "cited_scotus": 82,
+   "has_text": true,
+   "cl_id": 145777
+  },
+  "shortest": {
+   "any": 3,
+   "back": 3,
+   "forward": 3
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "Warnings to takings",
+  "older": {
+   "id": 19928,
+   "name": "Miranda v. Arizona",
+   "cite": "384 U.S. 436",
+   "year": 1966,
+   "date": "1966-06-13",
+   "cited_all": 57532,
+   "cited_scotus": 664,
+   "has_text": true,
+   "cl_id": 107252
+  },
+  "newer": {
+   "id": 26877,
+   "name": "Kelo v. City of New London",
+   "cite": "545 U.S. 469",
+   "year": 2005,
+   "date": "2005-06-23",
+   "cited_all": 602,
+   "cited_scotus": 10,
+   "has_text": true,
+   "cl_id": 799984
+  },
+  "shortest": {
+   "any": 3,
+   "back": 3,
+   "forward": 3
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "Contacts to experts",
+  "older": {
+   "id": 17324,
+   "name": "International Shoe Co. v. Washington",
+   "cite": "326 U.S. 310",
+   "year": 1945,
+   "date": "1945-12-03",
+   "cited_all": 18778,
+   "cited_scotus": 133,
+   "has_text": true,
+   "cl_id": 104200
+  },
+  "newer": {
+   "id": 25039,
+   "name": "Daubert v. Merrell Dow Pharmaceuticals, Inc.",
+   "cite": "509 U.S. 579",
+   "year": 1993,
+   "date": "1993-06-28",
+   "cited_all": 21460,
+   "cited_scotus": 35,
+   "has_text": true,
+   "cl_id": 112903
+  },
+  "shortest": {
+   "any": 3,
+   "back": 4,
+   "forward": 4
+  }
+ },
+ {
+  "group": "three-hop",
+  "theme": "Military tribunals",
+  "older": {
+   "id": 27375,
+   "name": "Ex Parte Milligan",
+   "cite": "71 U.S. 2",
+   "year": 1867,
+   "date": "1867-01-22",
+   "cited_all": 536,
+   "cited_scotus": 96,
+   "has_text": true,
+   "cl_id": 1528394
+  },
+  "newer": {
+   "id": 26516,
+   "name": "Boumediene v. Bush",
+   "cite": "553 U.S. 723",
+   "year": 2008,
+   "date": "2008-06-12",
+   "cited_all": 1141,
+   "cited_scotus": 28,
+   "has_text": true,
+   "cl_id": 145795
+  },
+  "shortest": {
+   "any": 2,
+   "back": 2,
+   "forward": 2
+  }
+ }
+]

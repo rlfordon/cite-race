@@ -1,6 +1,6 @@
 # Bulk data and derived caches (gigabytes); the static build in docs/ is what ships.
-data/
-!data/prototype/starters.json
+/data/
+!/data/prototype/starters.json
 *.pickle
 *.log
 __pycache__/
