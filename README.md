@@ -2,7 +2,9 @@
 
 A legal research game for law students: get from one Supreme Court case to another by following citations, Wikipedia-race style, racing against Jev.
 
-- **Play:** the GitHub Pages build in `docs/` runs entirely in the browser. The citation graph ships as JSON; opinion text is fetched per hop from the Caselaw Access Project archive at static.case.law.
+**Play it: https://rlfordon.github.io/cite-race/**
+
+- **How it runs:** the GitHub Pages build in `docs/` runs entirely in the browser. The citation graph ships as JSON; opinion text is fetched per hop from the Caselaw Access Project archive at static.case.law.
 - **Mechanic:** the opinion is the board. A citation in the text takes you back in time; the cited-by list takes you forward. Fewest hops wins. Par is the shortest path plus two.
 - **Modes:** either direction, back in time only, forward in time only.
 
