@@ -147,11 +147,51 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
 .err { color: var(--red); }
 [hidden] { display: none !important; }
 @media (max-width: 820px) {
-  .wrap { grid-template-columns: 1fr; gap: 24px; }
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   aside { position: static; max-height: none; }
   #opinion { column-count: 1; }
   .pagebox { --ph: 70vh; }
   .tabs .filters { margin-left: 0; }
+}
+/* Phones: the opinion comes first and scrolls like a page; a bar pinned to the top carries the score, the target
+   and the find box; the trail drops below the citator. */
+.mbar { display: none; }
+@media (max-width: 820px) {
+  aside { order: 2; scroll-margin-top: 96px; }
+  .mbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; position: sticky; top: 0; z-index: 10; background: var(--paper);
+    margin-inline: -16px; padding: calc(6px + env(safe-area-inset-top)) 16px 6px; border-bottom: 1px solid var(--toner); }
+  .mstat { display: flex; align-items: baseline; gap: 10px; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .mstat .tbtn { display: block; flex: 1; min-width: 0; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mstat .tbtn b { display: inline; }
+  .mstat > span { flex: none; }
+  .mstat button#mTrail { flex: none; font-size: 13px; padding: 2px 8px; }
+  .mbar .find input { flex: 1; width: auto; }
+  .mbar .find button { padding: 2px 12px; }
+  #page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .pagebox { overflow: visible; }
+  #opinion { height: auto; column-count: auto; column-rule: none; transform: none !important; }
+  .pagenav { display: none; }
+  .list ul { height: auto; min-height: 0; overflow: visible; }
+  /* iOS zooms into any field under 16px when it takes focus. */
+  input { font-size: 16px !important; }
+}
+/* Touch screens: a tap on a case opens a preview sheet first; nothing hovers. */
+dialog#sheet { border: none; border-top: 2px solid var(--toner); margin: auto 0 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  width: 100%; max-width: 100%; max-height: 75vh; box-sizing: border-box; color: var(--toner); background: var(--paper); font-family: var(--serif); }
+dialog#sheet[open] { display: flex; flex-direction: column; gap: 10px; }
+dialog#sheet::backdrop { background: rgba(0,0,0,0.35); }
+#sheetBody { flex: 0 1 auto; min-height: 0; overflow: auto; font-size: 14.5px; display: grid; gap: 6px; align-content: start; }
+#sheetBody .caption { margin-block: 0 4px; }
+#sheetBody p { margin: 0; text-align: left; hyphens: auto; }
+#sheetBody p.syllabus { font-size: 13.5px; }
+#sheetBody p.more { color: var(--grey); font-style: italic; }
+.sheetbtns { display: flex; flex: none; gap: 10px; }
+.sheetbtns button { flex: 1; padding: 10px; font-size: 15px; }
+.sheetbtns #sheetGo { font-weight: 700; border-width: 2px; border-color: var(--pen); color: var(--pen); }
+.sheetbtns #sheetGo:disabled { color: var(--rule); border-color: var(--rule); }
+@media (hover: none) {
+  .list li { padding-block: 5px; }
+  button:hover { background: var(--paper); }
 }
 </style>
 </head>
@@ -160,6 +200,10 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
   <div class="peekhead"><span>About the target</span><button type="button" id="peekClose" aria-label="Close">Close</button></div>
   <div class="peekbody" id="peekBody"></div>
   <p class="hint">Syllabus and opening paragraphs only. Its citations stay hidden, so the route is yours to find.</p>
+</dialog>
+<dialog id="sheet" aria-label="Case preview">
+  <div id="sheetBody"></div>
+  <div class="sheetbtns"><button type="button" id="sheetCancel">Stay here</button><button type="button" id="sheetGo">Go to this case</button></div>
 </dialog>
 <div class="card" id="card" hidden></div>
 <div class="wrap">
@@ -190,12 +234,15 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
       </table>
     </div>
     <div id="page" hidden>
+      <div class="mbar" id="mbar">
+        <div class="mstat"><span>Hop <b data-of="hopN">0</b>, par <span data-of="parN">–</span></span><button type="button" class="tbtn" id="mTarget">To <b data-of="targetName">–</b></button><span data-of="clock">00:00</span><button type="button" id="mTrail">Trail</button></div>
+      </div>
       <div class="runhead"><span id="rhName"></span><span id="rhCite"></span></div>
       <div class="citeas" id="citeas"></div>
       <div class="caption" id="caption"></div>
       <div class="pagebox"><div class="opinion" id="opinion"></div></div>
       <div class="pagenav">
-        <div class="find">
+        <div class="find" id="find">
           <label for="findBox">Find</label>
           <input id="findBox" type="search" placeholder="in this opinion" autocomplete="off">
           <span id="findN" class="hint"></span>
@@ -236,6 +283,9 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
 <script>
 (function () {
   const $ = id => document.getElementById(id);
+  // Writes a score field and its copy in the phone bar.
+  const put = (id, v) => { $(id).textContent = v; document.querySelectorAll(`[data-of="${id}"]`).forEach(e => { e.textContent = v; }); };
+  const narrow = matchMedia('(max-width: 820px)'), touch = matchMedia('(hover: none)');
   // On GitHub Pages there is no server: static-api.js answers the same calls from shipped data and the archive.
   const api = async (path) => {
     if (window.StaticApi && window.StaticApi.enabled) return window.StaticApi.call(path);
@@ -314,7 +364,7 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
     });
     trail(jev, '#c8201c', true, 6);
     trail(player, '#1f3fbf', false, 0);
-    $('hopN').textContent = String(Math.max(0, player.length - 1));
+    put('hopN', String(Math.max(0, player.length - 1)));
   }
 
   // Page.
@@ -398,6 +448,8 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
     if (findAt >= 0) finds[findAt].classList.remove('cur');
     findAt = (i + finds.length) % finds.length;
     const mk = finds[findAt]; mk.classList.add('cur');
+    // On a phone the opinion is one long scroll, not pages.
+    if (narrow.matches) { mk.scrollIntoView({ block: 'center' }); findLabel(); return; }
     const pw = pageWidth(), box = $('opinion').parentElement.getBoundingClientRect(), r = mk.getBoundingClientRect();
     const page = Math.floor((r.left - box.left + state.page * pw) / pw);
     if (page !== state.page && page >= 0 && page < (state.pages || 1)) { state.page = page; showPage(); }
@@ -478,8 +530,8 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
       } catch (e) { /* Jev sits this one out */ }
     }
     renderLadder();
-    if (String(c.id) === String(state.puzzle.target.id)) finish();
     window.scrollTo({ top: 0 });
+    if (String(c.id) === String(state.puzzle.target.id)) finish();
   }
   function goBack(i) {
     state.player = state.player.slice(0, i + 1);
@@ -491,6 +543,7 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
     const hops = state.player.length - 1, par = state.puzzle.par;
     const jevDone = state.jev.length && String(state.jev[state.jev.length - 1].id) === String(state.puzzle.target.id);
     const box = $('done'); box.hidden = false;
+    if (narrow.matches) $('side').scrollIntoView();
     const verdict = hops <= par - 2 ? 'Eagle.' : hops === par - 1 ? 'Birdie.' : hops === par ? 'Par.' : hops === par + 1 ? 'Bogey.' : `${hops - par} over par.`;
     box.innerHTML = `<b>Reached ${state.puzzle.target.name} in ${hops} hops. ${verdict}</b><span>Par ${par}. Jev ${jevDone ? `got there in ${state.jev.length - 1}` : `is at ${state.jev[state.jev.length - 1].name} after ${state.jev.length - 1}`}.</span><span class="loading">Looking up the shortest route…</span>`;
     try {
@@ -568,12 +621,34 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
     } catch (e) { if (cardFor === id) card.innerHTML = `<p class="err">Could not load it. ${e.message}</p>`; }
   }
   function hideCard() { clearTimeout(cardTimer); cardTimer = null; cardFor = null; card.hidden = true; }
-  function armCard(item) { if (document.activeElement === $('findBox')) return; clearTimeout(cardTimer); cardTimer = setTimeout(() => showCard(item), 350); }
+  function armCard(item) { if (touch.matches) return; if (document.activeElement === $('findBox')) return; clearTimeout(cardTimer); cardTimer = setTimeout(() => showCard(item), 350); }
   document.addEventListener('mouseover', e => { const item = e.target.closest('#citesList li, #citedList li'); if (!item) return; if (item.contains(e.relatedTarget)) return; armCard(item); });
   document.addEventListener('mouseout', e => { const item = e.target.closest('#citesList li, #citedList li'); if (!item || item.contains(e.relatedTarget)) return; hideCard(); });
   document.addEventListener('focusin', e => { const item = e.target.closest('#citesList li, #citedList li'); if (item) armCard(item); });
   document.addEventListener('focusout', e => { const item = e.target.closest('#citesList li, #citedList li'); if (item) hideCard(); });
   document.addEventListener('scroll', hideCard, true);
+
+  // Touch screens have no hover card, so a tap previews the case and a second tap commits the hop.
+  const sheet = $('sheet'); let sheetFor = null;
+  async function openSheet(id) {
+    sheetFor = id; $('sheetGo').disabled = true;
+    $('sheetBody').innerHTML = '<p class="loading">Pulling the volume…</p>'; $('sheetBody').scrollTop = 0;
+    sheet.showModal(); $('sheetGo').focus();
+    try {
+      const c = await loadCase(id); if (sheetFor !== id) return;
+      $('sheetBody').innerHTML = ''; $('sheetBody').appendChild(summaryOf(c, 'brief')); $('sheetGo').disabled = false;
+    } catch (e) { if (sheetFor === id) $('sheetBody').innerHTML = `<p class="err">Could not load it. ${e.message}</p>`; }
+  }
+  $('sheetGo').addEventListener('click', () => { const id = sheetFor; sheet.close(); if (id) hop(id); });
+  $('sheetCancel').addEventListener('click', () => sheet.close());
+  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
+  sheet.addEventListener('close', () => { sheetFor = null; });
+
+  // The phone bar: target and trail buttons, and the find box moves up into it.
+  $('mTarget').addEventListener('click', openPeek);
+  $('mTrail').addEventListener('click', () => $('side').scrollIntoView({ behavior: 'smooth' }));
+  function placeFind() { const f = $('find'); if (narrow.matches) $('mbar').appendChild(f); else document.querySelector('.pagenav').prepend(f); }
+  narrow.addEventListener('change', placeFind); placeFind();
 
   // Start screen.
   // The docket: every puzzle is a row, and a row is one click to play.
@@ -612,7 +687,7 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
     try {
       state.mode = modeOf();
       const p = await api(`/api/puzzle?${query}&mode=${state.mode}`); state.puzzle = p;
-      $('parN').textContent = String(p.par); $('targetName').textContent = p.target.name; $('targetCite').textContent = `${p.target.cite || ''} (${p.target.year})`;
+      put('parN', String(p.par)); put('targetName', p.target.name); $('targetCite').textContent = `${p.target.cite || ''} (${p.target.year})`;
       await begin();
     } catch (e) {
       const tr = document.createElement('tr'); const c = td('err', `Could not start that puzzle. ${e.message}`); c.colSpan = 5; tr.appendChild(c); body.prepend(tr);
@@ -625,10 +700,10 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
     const c = await loadCase(p.start.id); state.player = [c]; state.jev = [c];
     renderCase(c); renderLadder(); applyMode(); window.scrollTo({ top: 0 });
     state.t0 = Date.now(); clearInterval(state.timer);
-    state.timer = setInterval(() => { const s = Math.floor((Date.now() - state.t0) / 1000); $('clock').textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }, 500);
+    state.timer = setInterval(() => { const s = Math.floor((Date.now() - state.t0) / 1000); put('clock', `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`); }, 500);
   }
   function reset() {
-    clearInterval(state.timer); state.player = []; state.jev = []; state.finished = false; $('done').hidden = true; $('clock').textContent = '00:00';
+    clearInterval(state.timer); state.player = []; state.jev = []; state.finished = false; $('done').hidden = true; put('clock', '00:00');
     $('page').hidden = true; $('side').hidden = true; $('start').hidden = false; document.querySelector('.wrap').classList.add('docketing');
     renderLadder(); loadDocket(); window.scrollTo({ top: 0 });
   }
@@ -636,7 +711,7 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
   document.addEventListener('click', e => {
     const a = e.target.closest('a.cite'); if (!a) return; e.preventDefault();
     if (a.classList.contains('notext') || !allowed(a)) return;
-    hop(a.dataset.id);
+    if (touch.matches && !a.classList.contains('taken') && !state.finished) openSheet(a.dataset.id); else hop(a.dataset.id);
   });
   document.querySelectorAll('input[name=mode]').forEach(r => r.addEventListener('change', loadDocket));
   ['fFrom', 'fTo', 'fWord'].forEach(id => $(id).addEventListener('input', renderLists));

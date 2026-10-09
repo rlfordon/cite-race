@@ -37,3 +37,8 @@
 
 ## Publishing
 - static.case.law serves per-case HTML and JSON with open CORS, so a GitHub Pages build is feasible: ship the graph as compressed JSON, do BFS and puzzles in the browser, fetch opinion text per hop from the archive. Only real Jev would need a small proxy for the API key.
+
+## Phones (2026-10-09)
+- Under 820px the opinion comes first and scrolls as one column (no reporter pages); a bar pinned to the top carries hop, par, clock, the target (tap for the target dialog), a Trail button and the find box. The trail sidebar drops below the citator, and the citator lists grow to full length instead of scrolling inside the page.
+- On touch screens (`hover: none`) a tap on a citation or list entry opens a preview sheet with the same brief summary as the desktop hover card; "Go to this case" commits the hop. Cases already on your trail hop straight away. This costs a tap per hop but makes a mis-tap free, which matters in a game scored on hops.
+- Desktop is unchanged.
