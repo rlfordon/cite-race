@@ -436,7 +436,7 @@ a.cite.notext { cursor: not-allowed; border-bottom-style: dashed; }
   function summaryOf(c, size) {
     const brief = size === 'brief';
     const tmp = document.createElement('div'); tmp.innerHTML = c.html || '';
-    tmp.querySelectorAll('script,style,link,iframe').forEach(n => n.remove());
+    tmp.querySelectorAll('script,style,link,iframe,.page-label').forEach(n => n.remove());
     tmp.querySelectorAll('a.cite').forEach(a => { const sp = document.createElement('span'); sp.textContent = a.textContent; a.replaceWith(sp); });
     const out = document.createElement('div');
     const cap = document.createElement('div'); cap.className = 'caption';
