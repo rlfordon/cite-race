@@ -16,3 +16,6 @@ A fixed board of famous cases drawn as a road map (ties to the highway-map refer
 
 ### Known archive defects
 - Bivens, 403 U.S. 388: the CAP file's majority opinion begins mid-sentence (earlier pages missing from the scan). Keep a list here; a CourtListener text fallback is possible but needs an API key.
+
+### Citing-sentence contexts for the lists (filed 2026-10-09)
+Precompute, from the local CAP copy, the sentence around every citation anchor (about 300 chars per edge, 296k edges). Ship as bundles of ~100 cases (one ~100 KB fetch per case opened, ~120 MB in the repo). Show the citing sentence under each cited-by entry like a citator, and under each cites entry using the current opinion's own text; make the word filter search those sentences as well as case names. The same windows are what Jev should judge on, so one build serves both. Full-text filtering of citing cases is too heavy for the archive (tens of MB per filter); CourtListener's search API with `cites:` could do it in the server version only.
