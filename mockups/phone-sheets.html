@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phone Citator Sheets</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Mockup: the phone play screen with the citator and the trail as bottom sheets opened from the pinned bar,
+   so the reader keeps their place in the opinion. Lists are Gideon v. Wainwright's real cites and cited-by. */
+:root {
+  --paper: #ffffff;
+  --toner: #111111;
+  --grey: #6b6b6b;
+  --rule: #cfcfcf;
+  --pen: #1f3fbf;
+  --red: #c8201c;
+  --serif: 'Old Standard TT', 'Times New Roman', Times, serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--toner); font-family: var(--serif); font-size: 15px; line-height: 1.42; margin: 0; }
+.phone { max-width: 430px; margin: 0 auto; padding: 0 16px 60px; min-height: 100vh; }
+@media (min-width: 600px) { body { background: #eee; } .phone { background: var(--paper); border-inline: 1px solid var(--rule); } }
+button, input { font: inherit; font-size: 14px; color: var(--toner); background: var(--paper); border: 1px solid var(--toner); padding: 4px 10px; }
+button { cursor: pointer; }
+input { font-size: 16px; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--pen); outline-offset: 2px; }
+.hint { font-size: 13px; color: var(--grey); margin: 0; }
+.mocknote { font-size: 12px; color: var(--grey); text-align: center; padding: 8px 0 0; font-style: italic; }
+
+/* Pinned bar. */
+.mbar { position: sticky; top: 0; z-index: 10; background: var(--paper); margin-inline: -16px; padding: calc(6px + env(safe-area-inset-top)) 16px 8px;
+  border-bottom: 1px solid var(--toner); display: grid; gap: 7px; grid-template-columns: minmax(0, 1fr); }
+.mstat { display: flex; align-items: baseline; gap: 10px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.mstat > span { flex: none; }
+.mstat .tgt { flex: 1; min-width: 0; border: none; padding: 0; text-align: left; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: none; }
+.mtools { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; }
+.mtools button { font-size: 13px; padding: 6px 4px; white-space: nowrap; }
+.mtools button b { font-variant-numeric: tabular-nums; }
+.mtools .find { padding-inline: 12px; }
+.mfind { display: flex; gap: 6px; align-items: center; }
+.mfind input { flex: 1; min-width: 0; padding: 4px 8px; }
+.mfind button { padding: 6px 10px; font-size: 13px; }
+.mfind .n { font-size: 12px; color: var(--grey); white-space: nowrap; }
+
+/* The page. */
+.runhead { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; border-bottom: 1px solid var(--toner); padding: 14px 0 3px; }
+.citeas { text-align: center; font-size: 12px; color: var(--grey); margin-top: 8px; }
+.caption { text-align: center; display: grid; gap: 2px; margin: 14px 0; }
+.caption .party { font-weight: 700; font-size: 16px; letter-spacing: 0.04em; }
+.caption .v { font-style: italic; }
+.caption .dates { font-size: 13px; }
+.opinion p { margin: 0 0 0.6em; text-indent: 1.6em; text-align: justify; hyphens: auto; }
+.opinion .ph { color: #9a9a9a; }
+.opinion .author { font-variant: small-caps; text-indent: 0; }
+a.cite { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--grey); cursor: pointer; }
+a.cite.taken { border-bottom: 2px solid var(--pen); }
+a.cite.notext { border-bottom-style: dashed; cursor: not-allowed; }
+
+/* Sheets. */
+dialog.sheet { border: none; border-top: 2px solid var(--toner); margin: auto auto 0; padding: 0 16px calc(12px + env(safe-area-inset-bottom));
+  width: 100%; max-width: 430px; color: var(--toner); background: var(--paper); font-family: var(--serif); }
+dialog.sheet.tall { height: 82vh; }
+dialog.sheet[open] { display: flex; flex-direction: column; }
+dialog.sheet::backdrop { background: rgba(0,0,0,0.35); }
+.grab { width: 40px; height: 4px; background: var(--rule); margin: 8px auto 4px; flex: none; }
+.shead { display: flex; align-items: baseline; gap: 16px; padding: 4px 0 6px; border-bottom: 1px solid var(--toner); flex: none; }
+.shead .x { margin-left: auto; font-size: 13px; padding: 4px 10px; }
+.tabs .x, .shead .x { border: 1px solid var(--toner); text-transform: none; letter-spacing: 0; font-weight: 400; }
+.tabs button { border: none; padding: 0 0 2px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: none; border-bottom: 2px solid transparent; }
+.tabs button[aria-selected="true"] { border-bottom-color: var(--toner); }
+.shead h2 { font-size: 13px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 0.08em; }
+.filters { display: grid; grid-template-columns: 1fr 1fr 1.6fr; gap: 6px; padding: 8px 0; flex: none; }
+.filters input { width: 100%; font-size: 16px; padding: 4px 6px; }
+.sbody { flex: 1; min-height: 0; overflow: auto; }
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { display: flex; gap: 10px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #eee; font-variant-numeric: tabular-nums; font-size: 14.5px; }
+.list .yr { color: var(--grey); width: 2.8em; flex: none; }
+.list .n { color: var(--grey); margin-left: auto; flex: none; font-size: 12px; }
+.list .hint { padding: 6px 0; }
+.sfoot { display: flex; gap: 10px; flex: none; padding-top: 10px; }
+.sfoot button { flex: 1; padding: 10px; font-size: 15px; }
+.sfoot .go { font-weight: 700; border-width: 2px; border-color: var(--pen); color: var(--pen); }
+.preview { display: grid; gap: 6px; font-size: 14.5px; padding-top: 8px; }
+.preview .caption { margin: 0 0 4px; }
+.preview p { margin: 0; }
+.preview .more { color: var(--grey); font-style: italic; }
+.back { border: none; padding: 6px 0; font-size: 13px; color: var(--pen); background: none; text-align: left; }
+
+/* Trail sheet. */
+svg { display: block; width: 100%; height: auto; }
+.score { font-size: 14px; display: flex; justify-content: space-between; padding: 8px 0 4px; font-variant-numeric: tabular-nums; }
+.jev { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13.5px; display: grid; gap: 2px; }
+.jev li { color: var(--red); }
+.jev li span { color: var(--toner); }
+.target { font-size: 14px; border-top: 1px solid var(--rule); padding-top: 6px; margin-top: 8px; display: grid; gap: 2px; }
+[hidden] { display: none !important; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--toner); color: var(--paper); font-size: 13px; padding: 8px 14px; z-index: 30; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <p class="mocknote">Mockup. Lists are real; the opinion text is placeholder.</p>
+  <div class="mbar">
+    <div class="mstat"><span>Hop <b>1</b>, par 4</span><button class="tgt" type="button" id="tgt">To <b>Padilla v. Kentucky</b></button><span>03:12</span></div>
+    <div class="mtools" id="tools">
+      <button type="button" id="openTrail">Trail</button>
+      <button type="button" id="openCites">Cites <b id="nCites"></b></button>
+      <button type="button" id="openCited">Cited by <b id="nCited"></b></button>
+      <button type="button" class="find" id="openFind" aria-label="Find in this opinion">Find</button>
+    </div>
+    <div class="mfind" id="findRow" hidden>
+      <input type="search" placeholder="Find in this opinion" aria-label="Find in this opinion">
+      <span class="n">2 of 7</span><button type="button" aria-label="Previous match">&#8249;</button><button type="button" aria-label="Next match">&#8250;</button><button type="button" id="closeFind">Done</button>
+    </div>
+  </div>
+
+  <div class="runhead"><span>GIDEON V. WAINWRIGHT</span><span>372 U.S. 335</span></div>
+  <div class="citeas">Cite as 372 U.S. 335 (1963)</div>
+  <div class="caption"><div class="party">GIDEON</div><div class="v">v.</div><div class="party">WAINWRIGHT, CORRECTIONS DIRECTOR.</div><div class="dates">Decided March 18, 1963.</div></div>
+  <div class="opinion" id="opinion"></div>
+</div>
+
+<dialog class="sheet tall" id="citator" aria-label="Citations">
+  <div class="grab"></div>
+  <div class="shead tabs" role="tablist">
+    <button role="tab" id="tCites">Cites, <span class="c"></span></button>
+    <button role="tab" id="tCited">Cited by, <span class="c"></span></button>
+    <button type="button" class="x" data-close>Close</button>
+  </div>
+  <div id="listView" style="display:contents">
+    <div class="filters"><input type="number" placeholder="from" aria-label="From year"><input type="number" placeholder="to" aria-label="To year"><input type="search" placeholder="word in name" aria-label="Word in case name" id="fWord"></div>
+    <div class="sbody"><p class="hint" id="listHint"></p><ul class="list" id="list"></ul></div>
+  </div>
+  <div id="previewView" style="display:none">
+    <button type="button" class="back" id="backToList">&#8249; Back to the list</button>
+    <div class="sbody preview" id="preview"></div>
+    <div class="sfoot"><button type="button" class="go" id="go">Go to this case</button></div>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="trail" aria-label="Your trail">
+  <div class="grab"></div>
+  <div class="shead"><h2>Your trail</h2><button type="button" class="x" data-close>Close</button></div>
+  <div class="sbody">
+    <div class="score"><span>Hop <b>1</b>, par 4</span><span>03:12</span></div>
+    <svg id="ladder" viewBox="0 0 300 10" role="img" aria-label="Trail of cases, time across and hops down"></svg>
+    <ul class="jev"><li>Jev, hop 1: <span>Powell v. Alabama (1932)</span></li></ul>
+    <p class="hint" style="margin-top:6px">Time runs left to right, one row per hop. <span style="color:var(--pen)">Blue</span> is you, <span style="color:var(--red)">red</span> is Jev. Tap a row to return to that case.</p>
+    <div class="target"><span class="hint">Target</span><b>Padilla v. Kentucky</b><span class="hint">559 U.S. 356 (2010)</span></div>
+  </div>
+  <div class="sfoot"><button type="button">Back to the docket</button></div>
+</dialog>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const DATA = {"cites": [[1873, "Butchers' Benevolent Ass'n v. Crescent City Live-Stock Landing & Slaughter-House Co.", "83 U.S. 36", 1280, 1], [1876, "Walker v. Sauvinet", "92 U.S. 90", 299, 1], [1884, "Hurtado v. California", "110 U.S. 516", 1485, 1], [1892, "O'Neil v. Vermont", "144 U.S. 323", 275, 1], [1897, "Chicago, Burlington & Quincy Railroad v. Chicago", "166 U.S. 226", 1236, 1], [1898, "Smyth v. Ames", "169 U.S. 466", 1456, 1], [1900, "Maxwell v. Dow", "176 U.S. 581", 321, 1], [1908, "Twining v. New Jersey", "211 U.S. 78", 773, 1], [1925, "Gitlow v. New York", "268 U.S. 652", 1066, 1], [1927, "Chicago, Rock Island & Pacific Railway Co. v. United States", "274 U.S. 29", 42, 1], [1927, "Whitney v. California", "274 U.S. 357", 1055, 1], [1932, "Powell v. Alabama", "287 U.S. 45", 4994, 1], [1936, "Grosjean v. American Press Co.", "297 U.S. 233", 925, 1], [1937, "De Jonge v. Oregon", "299 U.S. 353", 833, 1], [1937, "Palko v. Connecticut", "302 U.S. 319", 2073, 1], [1938, "Lovell v. City of Griffin", "303 U.S. 444", 1300, 1], [1938, "Erie Railroad v. Tompkins", "304 U.S. 64", 18685, 1], [1938, "Johnson v. Zerbst", "304 U.S. 458", 10548, 1], [1940, "Avery v. Alabama", "308 U.S. 444", 706, 1], [1940, "Cantwell v. Connecticut", "310 U.S. 296", 3684, 1], [1941, "Smith v. O'GRADY", "312 U.S. 329", 588, 1], [1942, "Betts v. Brady", "316 U.S. 455", 1156, 1], [1945, "Williams v. Kaiser", "323 U.S. 471", 342, 1], [1947, "Adamson v. California", "332 U.S. 46", 547, 1], [1947, "Foster v. Illinois", "332 U.S. 134", 159, 1], [1948, "Bute v. Illinois", "333 U.S. 640", 327, 1], [1948, "Gryger v. Burke", "334 U.S. 728", 704, 1], [1948, "Uveges v. Pennsylvania", "335 U.S. 437", 278, 1], [1949, "Wolf v. Colorado", "338 U.S. 25", 1557, 1], [1950, "Quicksall v. Michigan", "339 U.S. 660", 98, 1], [1952, "Beauharnais v. Illinois", "343 U.S. 250", 480, 1], [1956, "Griffin v. Illinois", "351 U.S. 12", 3738, 1], [1957, "Reid v. Covert", "354 U.S. 1", 829, 1], [1957, "Roth v. United States", "354 U.S. 476", 3264, 1], [1957, "Moore v. Michigan", "355 U.S. 155", 493, 1], [1958, "Staub v. City of Baxley", "355 U.S. 313", 510, 1], [1958, "Speiser v. Randall", "357 U.S. 513", 1662, 1], [1960, "Smith v. California", "361 U.S. 147", 1259, 1], [1960, "Kinsella v. United States Ex Rel. Singleton", "361 U.S. 234", 296, 1], [1960, "Hudson v. North Carolina", "363 U.S. 697", 39, 1], [1960, "Elkins v. United States", "364 U.S. 206", 2492, 1], [1960, "Ohio Ex Rel. Eaton v. Price", "364 U.S. 263", 97, 1], [1960, "Shelton v. Tucker", "364 U.S. 479", 1732, 1], [1961, "Ferguson v. Georgia", "365 U.S. 570", 364, 1], [1961, "Louisiana Ex Rel. Gremillion v. National Ass'n for the Advancement of Colored People", "366 U.S. 293", 142, 1], [1961, "Poe v. Ullman", "367 U.S. 497", 1207, 1], [1961, "Mapp v. Ohio", "367 U.S. 643", 9113, 1], [1961, "Hamilton v. Alabama", "368 U.S. 52", 1342, 1], [1962, "Chewning v. Cunningham", "368 U.S. 443", 72, 1], [1962, "Carnley v. Cochran", "369 U.S. 506", 1896, 1], [1962, "Robinson v. California", "370 U.S. 660", 2393, 1], [1963, "Edwards v. South Carolina", "372 U.S. 229", 931, 1]], "cited": [[1984, "Strickland v. Washington", "466 U.S. 668", 119566, 1], [1967, "Anders v. California", "386 U.S. 738", 87895, 1], [1966, "Miranda v. Arizona", "384 U.S. 436", 57532, 1], [1967, "Chapman v. California", "386 U.S. 18", 23078, 1], [1988, "Penson v. Ohio", "488 U.S. 75", 14009, 1], [1970, "In Re WINSHIP", "397 U.S. 358", 11668, 1], [1975, "Faretta v. California", "422 U.S. 806", 11464, 1], [1969, "North Carolina v. Pearce", "395 U.S. 711", 7780, 1], [1994, "Albright v. Oliver", "510 U.S. 266", 7344, 1], [1986, "Delaware v. Van Arsdall", "475 U.S. 673", 7133, 1], [1993, "Brecht v. Abrahamson", "507 U.S. 619", 7102, 1], [1970, "Brady v. United States", "397 U.S. 742", 6724, 1], [1984, "United States v. Cronic", "466 U.S. 648", 6422, 1], [1977, "Wainwright v. Sykes", "433 U.S. 72", 6128, 1], [1967, "Stovall v. Denno", "388 U.S. 293", 6071, 1], [1964, "Jackson v. Denno", "378 U.S. 368", 6030, 1], [1970, "Goldberg v. Kelly", "397 U.S. 254", 5995, 1], [1982, "Rose v. Lundy", "455 U.S. 509", 5984, 1], [1973, "Gagnon v. Scarpelli", "411 U.S. 778", 5927, 1], [1991, "Arizona v. Fulminante", "499 U.S. 279", 5882, 1], [1967, "In Re GAULT", "387 U.S. 1", 5399, 1], [1980, "Cuyler v. Sullivan", "446 U.S. 335", 5346, 1], [1971, "Picard v. Connor", "404 U.S. 270", 5315, 1], [1964, "Escobedo v. Illinois", "378 U.S. 478", 5252, 1], [1999, "Neder v. United States", "527 U.S. 1", 5169, 1], [1970, "McMann v. Richardson", "397 U.S. 759", 5145, 1], [1981, "Polk County v. Dodson", "454 U.S. 312", 5107, 1], [2010, "Padilla v. Kentucky", "559 U.S. 356", 5076, 1], [1972, "Furman v. Georgia", "408 U.S. 238", 5056, 1], [1977, "Bounds v. Smith", "430 U.S. 817", 4910, 1], [1965, "Pointer v. Texas", "380 U.S. 400", 4766, 1], [1983, "Barefoot v. Estelle", "463 U.S. 880", 4744, 1], [1997, "Johnson v. United States", "520 U.S. 461", 4588, 1], [1965, "Griswold v. Connecticut", "381 U.S. 479", 4385, 1], [2012, "Martinez v. Ryan", "566 U.S. 1", 4244, 1], [1969, "Benton v. Maryland", "395 U.S. 784", 3977, 1], [1968, "Duncan v. Louisiana", "391 U.S. 145", 3742, 1], [1967, "Gilbert v. California", "388 U.S. 263", 3718, 1], [1964, "Malloy v. Hogan", "378 U.S. 1", 3654, 1], [1986, "Kimmelman v. Morrison", "477 U.S. 365", 3544, 1], [2000, "Smith v. Robbins", "528 U.S. 259", 3532, 1], [1993, "Sullivan v. Louisiana", "508 U.S. 275", 3519, 1], [1981, "Lassiter v. Department of Social Servs. of Durham Cty.", "452 U.S. 18", 3488, 1], [1985, "Ake v. Oklahoma", "470 U.S. 68", 3332, 1], [1967, "Washington v. Texas", "388 U.S. 14", 3301, 1], [1964, "Massiah v. United States", "377 U.S. 201", 3192, 1], [1963, "Ker v. California", "374 U.S. 23", 3146, 1], [1971, "Boddie v. Connecticut", "401 U.S. 371", 3107, 1], [1985, "Evitts v. Lucey", "469 U.S. 387", 3041, 1], [1993, "Herrera v. Collins", "506 U.S. 390", 3034, 1], [1966, "Johnson v. New Jersey", "384 U.S. 719", 3004, 1], [1972, "Kirby v. Illinois", "406 U.S. 682", 3002, 1], [1965, "Linkletter v. Walker", "381 U.S. 618", 2898, 1], [2016, "Montgomery v. Louisiana", "577 U.S. 190", 2690, 1], [1977, "Brewer v. Williams", "430 U.S. 387", 2628, 1], [1972, "United States v. Tucker", "404 U.S. 443", 2489, 1], [1978, "Holloway v. Arkansas", "435 U.S. 475", 2469, 1], [1975, "Taylor v. Louisiana", "419 U.S. 522", 2447, 1], [1986, "Rose v. Clark", "478 U.S. 570", 2431, 1], [1983, "Zant v. Stephens", "462 U.S. 862", 2395, 1], [1972, "Argersinger v. Hamlin", "407 U.S. 25", 2325, 1], [1976, "Estelle v. Williams", "425 U.S. 501", 2321, 1], [1975, "United States v. Watson", "423 U.S. 411", 2240, 1], [1971, "Bell v. Burson", "402 U.S. 535", 2209, 1], [1979, "North Carolina v. Butler", "441 U.S. 369", 2101, 1], [2010, "McDonald v. City of Chicago", "561 U.S. 742", 2053, 1], [1983, "United States v. Hasting", "461 U.S. 499", 1996, 1], [1988, "Wheat v. United States", "486 U.S. 153", 1957, 1], [1967, "Curtis Publishing Co. v. Butts", "388 U.S. 130", 1914, 1], [1993, "Godinez v. Moran", "509 U.S. 389", 1912, 1], [2006, "United States v. Gonzalez-Lopez", "548 U.S. 140", 1871, 1], [1964, "Garrison v. Louisiana", "379 U.S. 64", 1864, 1], [1983, "Morris v. Slappy", "461 U.S. 1", 1859, 1], [1967, "Klopfer v. North Carolina", "386 U.S. 213", 1824, 1], [1970, "Coleman v. Alabama", "399 U.S. 1", 1813, 1], [1970, "Williams v. Florida", "399 U.S. 78", 1752, 1], [1965, "Estes v. Texas", "381 U.S. 532", 1750, 1], [1988, "McCoy v. Court of Appeals of Wisconsin, District 1", "486 U.S. 429", 1740, 1], [1996, "Gray v. Netherland", "518 U.S. 152", 1659, 1], [1986, "Vasquez v. Hillery", "474 U.S. 254", 1658, 1], [1967, "Mempa v. Rhay", "389 U.S. 128", 1592, 1], [1967, "Burgett v. Texas", "389 U.S. 109", 1553, 1], [1974, "Ross v. Moffitt", "417 U.S. 600", 1433, 1], [1966, "Spencer v. Texas", "385 U.S. 554", 1422, 1], [2002, "Mickens v. Taylor", "535 U.S. 162", 1420, 1], [1991, "Pacific Mutual Life Insurance v. Haslip", "499 U.S. 1", 1414, 1], [1999, "City of Chicago v. Morales", "527 U.S. 41", 1384, 1], [2017, "Davila v. Davis", "582 U.S. 521", 1354, 1], [1975, "Herring v. New York", "422 U.S. 853", 1339, 1], [1994, "Custis v. United States", "511 U.S. 485", 1281, 1], [1985, "Maine v. Moulton", "474 U.S. 159", 1265, 1], [2020, "Ramos v. Louisiana", "140 S. Ct. 1390", 1261, 1], [1992, "Georgia v. McCollum", "505 U.S. 42", 1244, 1], [1969, "Desist v. United States", "394 U.S. 244", 1242, 1], [1986, "United States v. Lane", "474 U.S. 438", 1217, 1], [1963, "Rideau v. Louisiana", "373 U.S. 723", 1213, 1], [1993, "Harper v. Virginia Department of Taxation", "509 U.S. 86", 1205, 1], [1981, "United States v. Morrison", "449 U.S. 361", 1169, 1], [1969, "Smith v. Hooey", "393 U.S. 374", 1135, 1], [2006, "Washington v. Recuenco", "548 U.S. 212", 1108, 1], [1984, "United States v. Gouveia", "467 U.S. 180", 1102, 1], [1971, "McGautha v. California", "402 U.S. 183", 1080, 1], [2004, "Tennessee v. Lane", "541 U.S. 509", 1055, 1], [1990, "Saffle v. Parks", "494 U.S. 484", 1054, 1], [1983, "Rushen v. Spain", "464 U.S. 114", 1018, 1], [1980, "United States v. Henry", "447 U.S. 264", 1014, 1], [1979, "Scott v. Illinois", "440 U.S. 367", 1012, 1], [2005, "Deck v. Missouri", "544 U.S. 622", 1008, 1], [1963, "Lopez v. United States", "373 U.S. 427", 983, 1], [1984, "Flanagan v. United States", "465 U.S. 259", 968, 1], [1971, "MacKey v. United States", "401 U.S. 667", 945, 1], [2010, "United States v. Marcus", "560 U.S. 258", 945, 0], [1992, "Wright v. West", "505 U.S. 277", 944, 1], [1988, "Satterwhite v. Texas", "486 U.S. 249", 933, 1], [1967, "Time, Inc. v. Hill", "385 U.S. 374", 927, 1], [1996, "M. L. B. v. S. L. J.", "519 U.S. 102", 922, 1], [1973, "United States v. Ash", "413 U.S. 300", 871, 1], [1980, "Lewis v. United States", "445 U.S. 55", 847, 1], [2000, "Martinez v. Court of Appeal of California, Fourth Appellate District", "528 U.S. 152", 846, 1], [1994, "Nichols v. United States", "511 U.S. 738", 834, 1], [1973, "Wardius v. Oregon", "412 U.S. 470", 831, 1], [1972, "Milton v. Wainwright", "407 U.S. 371", 826, 1], [1989, "Caplin & Drysdale, Chartered v. United States", "491 U.S. 617", 815, 1], [2009, "District Attorney's Office for the Third Judicial District v. Osborne", "557 U.S. 52", 792, 0], [1967, "Spevack v. Klein", "385 U.S. 511", 779, 1], [2008, "Danforth v. Minnesota", "552 U.S. 264", 775, 1], [2012, "Perry v. New Hampshire", "565 U.S. 228", 774, 1], [2004, "Beard v. Banks", "542 U.S. 406", 742, 1], [1965, "Tehan v. United States Ex Rel. Shott", "382 U.S. 406", 739, 1], [2007, "Whorton v. Bockting", "549 U.S. 406", 734, 1], [1987, "United States v. Mendoza-Lopez", "481 U.S. 828", 704, 1], [1989, "In re McDonald", "489 U.S. 180", 699, 1], [2013, "Marshall v. Rodgers", "569 U.S. 58", 683, 1], [2017, "Weaver v. Massachusetts", "582 U.S. 286", 677, 1], [1968, "Roberts v. Russell", "392 U.S. 293", 668, 1], [1971, "Williams v. United States", "401 U.S. 646", 659, 1], [1983, "Connecticut v. Johnson", "460 U.S. 73", 606, 1], [1972, "Brooks v. Tennessee", "406 U.S. 605", 602, 1], [1966, "Tehan v. United States ex rel. Shott", "382 U.S. 406", 594, 1], [1984, "Solem v. Stumes", "465 U.S. 638", 584, 1], [1970, "Oregon v. Mitchell", "400 U.S. 112", 576, 1], [2001, "Lackawanna County District Attorney v. Coss", "532 U.S. 394", 576, 1], [2014, "Kaley v. United States", "571 U.S. 320", 566, 1], [1980, "Baldasar v. Illinois", "446 U.S. 222", 560, 1], [1989, "Murray v. Giarratano", "492 U.S. 1", 551, 1], [1985, "Walters v. National Assn. of Radiation Survivors", "473 U.S. 305", 534, 1], [1976, "United States v. Mandujano", "425 U.S. 564", 525, 1], [1997, "O'Dell v. Netherland", "521 U.S. 151", 521, 1], [2019, "Garza v. Idaho", "586 U.S. 232", 517, 1], [2022, "Dobbs v. Jackson Women's Health Organization", "597 U.S. 215", 511, 0], [1966, "Commissioner v. Tellier", "383 U.S. 687", 503, 1], [1993, "Gilmore v. Taylor", "508 U.S. 333", 490, 1], [2001, "Texas v. Cobb", "532 U.S. 162", 487, 1], [1965, "United States v. Gainey", "380 U.S. 63", 482, 1], [1989, "Perry v. Leeke", "488 U.S. 272", 479, 1], [1972, "Loper v. Beto", "405 U.S. 473", 475, 1], [2001, "Daniels v. United States", "532 U.S. 374", 473, 1], [1965, "Swift & Co. v. Wickham", "382 U.S. 111", 470, 1], [2008, "Rothgery v. Gillespie County", "554 U.S. 191", 450, 1], [2005, "Johnson v. United States", "544 U.S. 295", 442, 1], [1968, "DeStefano v. Woods", "392 U.S. 631", 433, 1], [2011, "Turner v. Rogers", "564 U.S. 431", 426, 1], [2005, "Halbert v. Michigan", "545 U.S. 605", 411, 1], [1964, "Brotherhood of Railroad Trainmen v. Virginia Ex Rel. Virginia State Bar", "377 U.S. 1", 398, 1], [2016, "Williams v. Pennsylvania", "579 U.S. 1", 394, 1], [2021, "Jones v. Mississippi", "593 U.S. 98", 383, 0], [1978, "Lakeside v. Oregon", "435 U.S. 333", 382, 1], [1973, "Michigan v. Payne", "412 U.S. 47", 375, 1], [1974, "Fuller v. Oregon", "417 U.S. 40", 364, 1], [1998, "Ohio Adult Parole Authority v. Woodard", "523 U.S. 272", 359, 1], [1968, "McConnell v. Rhay", "393 U.S. 2", 355, 1], [1976, "Middendorf v. Henry", "425 U.S. 25", 337, 1], [2002, "Alabama v. Shelton", "535 U.S. 654", 336, 1], [1972, "Adams v. Illinois", "405 U.S. 278", 312, 1], [1991, "In Re Sindram", "498 U.S. 177", 312, 1], [2020, "Ramos v. Louisiana", "590 U.S. 83", 290, 0], [1972, "James v. Strange", "407 U.S. 128", 288, 1], [1989, "Chan v. Korean Air Lines, Ltd.", "490 U.S. 122", 266, 1], [1968, "Arsenault v. Massachusetts", "393 U.S. 5", 234, 1], [1973, "Gosa v. Mayden", "413 U.S. 665", 229, 1], [1965, "Case v. Nebraska", "381 U.S. 336", 182, 1], [2016, "Luis v. United States", "578 U.S. 5", 166, 1], [1964, "Doughty v. Maxwell", "376 U.S. 202", 154, 1], [1976, "North v. Russell", "427 U.S. 328", 145, 1], [2015, "Maryland v. Kulbicki", "577 U.S. 1", 136, 1], [1971, "Kitchens v. Smith", "401 U.S. 847", 127, 1], [1972, "Boyd v. Dutton", "405 U.S. 1", 115, 1], [1971, "Meltzer v. C. Buck LeCraw & Co.", "402 U.S. 954", 99, 1], [1965, "Holt v. Virginia", "381 U.S. 131", 97, 1], [1966, "Greer v. Beto", "384 U.S. 269", 93, 1], [2021, "Edwards v. Vannoy", "593 U.S. 255", 80, 0], [1966, "DeJoseph v. Connecticut", "385 U.S. 982", 54, 1], [2016, "United States v. Bryant", "579 U.S. 140", 50, 0], [1966, "Winters v. Beck, Penal Farm Superintendent", "385 U.S. 907", 49, 1], [1967, "Nowakowski v. Maroney", "386 U.S. 542", 46, 1], [1973, "Tacon v. Arizona", "410 U.S. 351", 43, 1], [1986, "Thomas v. Kemp, Warden", "479 U.S. 996", 39, 1], [1984, "Arnold v. South Carolina; And Plath v. South Carolina", "467 U.S. 1265", 31, 1], [1967, "Hackin v. Arizona", "389 U.S. 143", 25, 1], [1963, "Patterson v. Warden, Maryland Penitentiary", "372 U.S. 776", 23, 1], [1964, "Spencer v. California", "377 U.S. 1007", 23, 1], [1974, "Dorman v. United States", "419 U.S. 945", 20, 1], [1963, "Doughty v. Maxwell", "372 U.S. 781", 19, 1], [1963, "Barnes v. North Carolina", "375 U.S. 28", 16, 1], [1964, "LaVallee v. Durocher", "377 U.S. 998", 16, 1], [1970, "Robert Baldwin v. State of New York. Johnny Williams v. State of Florida", "399 U.S. 117", 15, 0], [1971, "Massey v. Georgia", "401 U.S. 964", 14, 1], [1978, "Maryland v. Marzullo", "435 U.S. 1011", 13, 1], [1984, "Williams v. Florida", "465 U.S. 1109", 13, 1], [1963, "Berry v. New York", "375 U.S. 160", 10, 1], [1965, "Arthur v. Colorado", "380 U.S. 250", 9, 1], [1967, "Heller v. Connecticut", "389 U.S. 902", 8, 1], [1963, "Weigner v. Russell", "372 U.S. 767", 7, 1], [1981, "Snead, Sheriff, Et Al. v. Stringer", "454 U.S. 988", 5, 1], [1986, "Maxwell v. Florida", "479 U.S. 972", 5, 1], [1963, "Vecchiolli v. Maroney", "372 U.S. 768", 5, 1], [1969, "Sigler, Warden v. Losieau", "396 U.S. 988", 4, 1], [1974, "Johnson v. Nebraska", "419 U.S. 949", 4, 1], [1963, "Arnold v. Director, Florida Division of Corrections", "372 U.S. 769", 3, 1], [1963, "Huggins v. Raines", "374 U.S. 105", 2, 1], [1964, "Sanders v. Alabama", "377 U.S. 125", 2, 1], [1963, "Newsome v. North Carolina", "375 U.S. 21", 1, 1], [1963, "Davis v. Banmiller", "374 U.S. 489", 1, 1], [1963, "Walker v. Walker", "374 U.S. 488", 1, 1], [1963, "Lindner v. Nash", "372 U.S. 777", 1, 1], [1963, "Walker v. Randolph, Warden", "372 U.S. 773", 0, 1], [1963, "Tyler v. North Carolina", "372 U.S. 775", 0, 1], [1963, "Jordan v. Wiman", "372 U.S. 780", 0, 1], [2014, "Kaley v. United States", "", 0, 0], [2016, "Montgomery v. Louisiana", "", 0, 0], [2016, "United States v. Bryant", "", 0, 0], [2021, "Edwards v. Vannoy", "", 0, 0], [1965, "Linkletter v. Walker", "5 Ohio Misc. 49", 0, 0], [1963, "Haynes v. Florida", "372 U.S. 770", 0, 1], [1963, "Paige v. North Carolina", "374 U.S. 491", 0, 1]]};
+  $('nCites').textContent = DATA.cites.length; $('nCited').textContent = DATA.cited.length;
+  document.querySelectorAll('#tCites .c').forEach(e => e.textContent = DATA.cites.length);
+  document.querySelectorAll('#tCited .c').forEach(e => e.textContent = DATA.cited.length);
+
+  // Placeholder opinion with a few real cites linked.
+  const ph = '<span class="ph">Placeholder opinion text stands in for the reporter page here, running on for a paragraph so the page reads like a page.</span>';
+  const cite = (name, cite, taken) => `<a class="cite${taken ? ' taken' : ''}" data-name="${name}">${name}, ${cite}</a>`;
+  const paras = [
+    '<p class="author">Mr. Justice Black delivered the opinion of the Court.</p>',
+    `<p>${ph} ${cite('Betts v. Brady', '316 U.S. 455', true)}. ${ph}</p>`,
+    `<p>${ph} ${cite('Powell v. Alabama', '287 U.S. 45')}. ${ph} ${ph}</p>`,
+    `<p>${ph} ${cite('Johnson v. Zerbst', '304 U.S. 458')}. ${ph}</p>`,
+  ];
+  for (let i = 0; i < 8; i++) paras.push(`<p>${ph} ${ph} ${ph}</p>`);
+  $('opinion').innerHTML = paras.join('');
+
+  // Citator sheet.
+  let tab = 'cited';
+  function renderList() {
+    $('tCites').setAttribute('aria-selected', String(tab === 'cites')); $('tCited').setAttribute('aria-selected', String(tab === 'cited'));
+    $('listHint').textContent = tab === 'cites' ? 'Cases this opinion cites. Going there goes back in time.' : 'Later cases that cite this one, most-cited first. Going there goes forward in time.';
+    const w = $('fWord').value.trim().toLowerCase();
+    const ul = $('list'); ul.innerHTML = '';
+    DATA[tab].filter(c => !w || c[1].toLowerCase().includes(w)).forEach(c => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="yr">${c[0]}</span><a class="cite${c[4] ? '' : ' notext'}"></a><span class="n">${c[3].toLocaleString()} citing</span>`;
+      li.querySelector('a').textContent = `${c[1]}, ${c[2]}`; li.querySelector('a').dataset.name = c[1];
+      ul.appendChild(li);
+    });
+    $('list').parentElement.scrollTop = 0;
+  }
+  function showList() { $('listView').style.display = 'contents'; $('previewView').style.display = 'none'; }
+  function openCitator(t) { tab = t; showList(); renderList(); $('citator').showModal(); }
+  $('openCites').addEventListener('click', () => openCitator('cites'));
+  $('openCited').addEventListener('click', () => openCitator('cited'));
+  $('tCites').addEventListener('click', () => { tab = 'cites'; showList(); renderList(); });
+  $('tCited').addEventListener('click', () => { tab = 'cited'; showList(); renderList(); });
+  $('fWord').addEventListener('input', renderList);
+  $('backToList').addEventListener('click', showList);
+
+  // A tap on a case previews it in place; the opinion behind never moves.
+  function preview(name, where) {
+    const all = DATA.cites.concat(DATA.cited), c = all.find(x => x[1] === name) || [0, name, '', 0, 1];
+    $('preview').innerHTML = `<div class="caption"><div class="party"></div><div class="dates">${c[2]} (${c[0]})</div></div>
+      <p class="hint" style="font-style:italic">The syllabus and opening lines go here, as on the desktop hover card.</p>
+      <p class="more">Cited by ${c[3].toLocaleString()} later opinions.</p>`;
+    $('preview').querySelector('.party').textContent = name.toUpperCase();
+    $('listView').style.display = 'none'; $('previewView').style.display = 'flex'; $('previewView').style.flexDirection = 'column'; $('previewView').style.flex = '1'; $('previewView').style.minHeight = '0';
+    if (where === 'text' && !$('citator').open) { $('tCites').setAttribute('aria-selected', 'false'); $('tCited').setAttribute('aria-selected', 'false'); $('citator').showModal(); }
+  }
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a.cite'); if (!a || a.classList.contains('notext') || a.classList.contains('taken')) return;
+    preview(a.dataset.name, a.closest('#opinion') ? 'text' : 'list');
+  });
+  $('go').addEventListener('click', () => { $('citator').close(); toast('In the game this hops to the case.'); });
+
+  // Trail sheet.
+  $('openTrail').addEventListener('click', () => { $('trail').showModal(); });
+  $('tgt').addEventListener('click', () => toast('Opens the About the target dialog, as now.'));
+  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+  document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+  // Find swaps in for the tool row.
+  $('openFind').addEventListener('click', () => { $('tools').hidden = true; $('findRow').hidden = false; $('findRow').querySelector('input').focus(); });
+  $('closeFind').addEventListener('click', () => { $('tools').hidden = false; $('findRow').hidden = true; });
+
+  function toast(s) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = s; document.body.appendChild(t); setTimeout(() => t.remove(), 1800); }
+
+  // Ladder, drawn the way the game draws it.
+  const svg = $('ladder'), NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; };
+  const text = (x, y, s, a) => { const t = el('text', Object.assign({ x, y, 'font-family': 'Old Standard TT, Times New Roman, serif', 'font-size': 12, fill: '#111' }, a)); t.textContent = s; };
+  const W = 300, L = 18, R = 288, Y0 = 1789, Y1 = 2026, ROW = 46, TOP = 38, xOf = y => L + (y - Y0) / (Y1 - Y0) * (R - L), rowY = i => TOP + i * ROW + 10;
+  const player = [{ name: 'Betts v. Brady', year: 1942 }, { name: 'Gideon v. Wainwright', year: 1963 }], jev = [{ name: 'Betts v. Brady', year: 1942 }, { name: 'Powell v. Alabama', year: 1932 }];
+  const H = TOP + 3 * ROW + 10; svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  el('line', { x1: L, y1: 22, x2: R, y2: 22, stroke: '#111' });
+  [1800, 1850, 1900, 1950, 2000].forEach(y => { el('line', { x1: xOf(y), y1: 22, x2: xOf(y), y2: 27, stroke: '#111' }); text(xOf(y), 16, String(y), { 'text-anchor': 'middle', 'font-size': 11, fill: '#6b6b6b' }); el('line', { x1: xOf(y), y1: 27, x2: xOf(y), y2: H - 6, stroke: '#e6e6e6' }); });
+  const tx = xOf(2010); el('line', { x1: tx, y1: 27, x2: tx, y2: H - 6, stroke: '#111', 'stroke-dasharray': '3 4' }); text(tx - 4, H - 8, 'target 2010', { 'font-size': 11, 'font-style': 'italic', 'text-anchor': 'end' });
+  function trail(keys, colour, dashed, dy) {
+    for (let i = 0; i < keys.length - 1; i++) { const p = el('path', { d: `M ${xOf(keys[i].year)} ${rowY(i) + dy} L ${xOf(keys[i + 1].year)} ${rowY(i + 1) + dy}`, stroke: colour, 'stroke-width': 2, fill: 'none' }); if (dashed) p.setAttribute('stroke-dasharray', '6 4'); }
+    keys.forEach((c, i) => el('circle', { cx: xOf(c.year), cy: rowY(i) + dy, r: dashed ? 5 : 4, fill: i === keys.length - 1 && !dashed ? colour : '#fff', stroke: colour, 'stroke-width': 2 }));
+  }
+  player.forEach((c, i) => { const x = xOf(c.year), y = rowY(i); text(4, y + 4, String(i), { 'font-size': 11, fill: '#6b6b6b' }); const right = W - x >= x, lx = right ? x + 10 : x - 10, an = right ? 'start' : 'end'; text(lx, y - 7, c.name, { 'font-weight': i === 1 ? 700 : 400, 'text-anchor': an }); text(lx, y + 7, c.year + (i ? ', here' : ', start'), { 'font-size': 11, fill: '#6b6b6b', 'text-anchor': an }); });
+  trail(jev, '#c8201c', true, 6); trail(player, '#1f3fbf', false, 0);
+})();
+</script>
+</body>
+</html>
