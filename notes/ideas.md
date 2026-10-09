@@ -10,3 +10,9 @@
 - `sydney midcentury.jpg`: Sydney Outlet Roads, flat yellow land, blue water, red roads, green boxed destination names, hand-lettered title.
 - `indiana jones.jpg`: the red travel line animated across a map. The route reveal as the race replay.
 What is specific here, not generic: two-ink printing on cream, numbered route shields (a citation could be a shield), the hand-traced route in pen, destination names in boxes, a legend that explains trail blazes (treatment signals), a strip map that shows only one route and nothing else.
+
+### Route-claiming board game (a friend's idea, 2026-10-09)
+A fixed board of famous cases drawn as a road map (ties to the highway-map references), with direct citations as the roads. Players hold assignments to connect two cases and claim a road by finding the citation in the text. Multiplayer classroom mode; works on paper. Avoid the Ticket to Ride name, train theme, coloured-car visuals and their card wording; mechanics themselves are not protected. Vocabulary already on hand: map, writs or memos from a partner, roads, pen marks.
+
+### Known archive defects
+- Bivens, 403 U.S. 388: the CAP file's majority opinion begins mid-sentence (earlier pages missing from the scan). Keep a list here; a CourtListener text fallback is possible but needs an API key.
