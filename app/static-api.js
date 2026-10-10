@@ -43,6 +43,7 @@
   // ---------------------------------------------------------------- graph
   let G = null;          // parsed graph.json plus CSR adjacency
   let STARTERS = null;   // docs/data/starters.json
+  let JEV = null;        // docs/data/jev.json: Jev's precomputed routes (scripts/precompute_jev.py), if built
   let loading = null;
   const caseCache = new Map();   // cl id -> /api/case response
   const distCache = new Map();   // `${targetIdx}:${mode}` -> Int32Array
@@ -107,8 +108,8 @@
   function load() {
     if (G && STARTERS) return Promise.resolve();
     if (!loading) {
-      loading = Promise.all([fetchJson('data/graph.json'), fetchJson('data/starters.json')]).then(([g, s]) => {
-        G = prepare(g); STARTERS = s;
+      loading = Promise.all([fetchJson('data/graph.json'), fetchJson('data/starters.json'), fetchJson('data/jev.json').catch(() => null)]).then(([g, s, j]) => {
+        G = prepare(g); STARTERS = s; JEV = j;
       }).catch(e => { loading = null; throw e; });
     }
     return loading;
@@ -173,6 +174,9 @@
   // ---------------------------------------------------------------- endpoints
   function apiPuzzle(seed, mode) {
     const rng = rngFor(mode !== 'any' ? `${seed}:${mode}` : seed);
+    // With Jev's routes built, random draws come from the pairs Jev has raced.
+    const pool = JEV && JEV.pool && JEV.pool[mode];
+    if (pool && pool.length) return Object.assign(apiPairPuzzle(choice(rng, pool), mode), { seed });
     for (let tries = 0; tries < 500; tries++) {
       const start = choice(rng, G.eligible);
       const dist = bfsFrom(start, mode, 5);
@@ -215,6 +219,14 @@
   }
 
   function apiOpponent(seed, at, target, visited, mode) {
+    // Jev's precomputed route for this pair, followed while Jev's trail so far is the route's opening.
+    const trail = Array.from(visited, i => G.ids[i]);
+    const route = JEV && trail.length && JEV.routes[`${mode}:${trail[0]}-${G.ids[target]}`];
+    const k = trail.length - 1;
+    if (route && route.path[k] === G.ids[at] && trail.every((id, j) => route.path[j] === id)) {
+      const next = route.path[k + 1];
+      return next == null || !G.byCl.has(next) ? { move: null, note: 'jev: gave up' } : { move: nodeObj(G.byCl.get(next)), note: 'jev' };
+    }
     const rng = rngFor(`${seed}:${G.ids[at]}:${mode}`);
     const cands = Array.from(neighbours(at, mode)).filter(c => c !== at && !visited.has(c)).sort((x, y) => x - y);
     if (!cands.length) return { move: null, note: 'stand-in: no unvisited neighbour' };

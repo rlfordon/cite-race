@@ -73,7 +73,7 @@ check('path against time in back mode is null', nopath.length === null);
 const p1 = await api.call('/api/puzzle?seed=1&mode=any');
 const o1 = await api.call(`/api/opponent?puzzle=1&at=${p1.start.id}&target=${p1.target.id}&visited=${p1.start.id}&mode=any`);
 const o2 = await api.call(`/api/opponent?puzzle=1&at=${p1.start.id}&target=${p1.target.id}&visited=${p1.start.id}&mode=any`);
-check('opponent returns a move', isNode(o1.move) && /^stand-in/.test(o1.note) && o1.move.id !== p1.start.id, `${o1.move && o1.move.name}, ${o1.note}`);
+check('opponent returns a move', isNode(o1.move) && /^(stand-in|jev)/.test(o1.note) && o1.move.id !== p1.start.id, `${o1.move && o1.move.name}, ${o1.note}`);
 check('opponent is deterministic', o2.move.id === o1.move.id);
 const o3 = await api.call(`/api/opponent?puzzle=1&at=${p1.start.id}&target=${p1.target.id}&visited=${p1.start.id},${o1.move.id}&mode=any`);
 check('opponent never revisits', o3.move === null || (o3.move.id !== o1.move.id && o3.move.id !== p1.start.id));

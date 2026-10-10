@@ -35,6 +35,7 @@ NODE_KEYS = ("id", "name", "cite", "year", "date", "cited_all", "cited_scotus", 
 INDEX = None
 NODES = OUT_ADJ = IN_ADJ = UND_ADJ = TEXT = CAP_TO_CL = None
 ELIGIBLE = None  # sorted ids usable as puzzle endpoints
+JEV = None  # docs/data/jev.json: Jev's precomputed routes (scripts/precompute_jev.py), if built
 
 
 # ----------------------------------------------------------------------------- graph helpers
@@ -120,6 +121,10 @@ def par_for(shortest):
 
 def api_puzzle(seed, mode):
     rng = random.Random(f"{seed}:{mode}" if mode != "any" else seed)
+    # With Jev's routes built, random draws come from the pairs Jev has raced.
+    pool = (JEV or {}).get("pool", {}).get(mode)
+    if pool:
+        return {**api_pair_puzzle(rng.choice(pool), mode), "seed": seed}
     for _ in range(500):
         start = rng.choice(ELIGIBLE)
         dist = bfs_from(start, mode, max_depth=5)
@@ -182,6 +187,15 @@ def api_path(a, b, mode):
 
 
 def api_opponent(seed, at, target, visited, mode):
+    """`visited` is Jev's trail in order. Its precomputed route is followed while the trail is the route's opening."""
+    route = (JEV or {}).get("routes", {}).get(f"{mode}:{visited[0]}-{target}") if visited else None
+    k = len(visited) - 1
+    if route and route["path"][:k + 1] == visited and visited[-1] == at:
+        nxt = route["path"][k + 1] if k + 1 < len(route["path"]) else None
+        if nxt is None or nxt not in NODES:
+            return {"move": None, "note": "jev: gave up"}
+        return {"move": node_obj(nxt), "note": "jev"}
+    visited = set(visited)
     rng = random.Random(f"{seed}:{at}:{mode}")
     cands = sorted(c for c in neighbours(at, mode) if c not in visited and c != at)
     if not cands:
@@ -315,12 +329,12 @@ class Handler(BaseHTTPRequestHandler):
         if parts[1:] == ["path"]:
             return api_path(q_node(qs, "from"), q_node(qs, "to"), q_mode(qs))
         if parts[1:] == ["opponent"]:
-            visited = set()
+            visited = []
             for v in qs.get("visited", [""])[0].split(","):
                 v = v.strip()
                 if v:
                     try:
-                        visited.add(int(v))
+                        visited.append(int(v))
                     except ValueError:
                         raise ApiError(400, "visited must be comma-separated ids") from None
             return api_opponent(q_int(qs, "puzzle", 0), q_node(qs, "at"), q_node(qs, "target"),
@@ -369,6 +383,16 @@ def load(force=False):
     TEXT, CAP_TO_CL = INDEX["text"], INDEX["cap_to_cl"]
     ELIGIBLE = sorted(cid for cid, n in NODES.items() if n["real"])
     load_starters()
+    load_jev()
+
+
+def load_jev():
+    global JEV
+    try:
+        with open(os.path.join(ROOT, "docs", "data", "jev.json"), encoding="utf-8") as f:
+            JEV = json.load(f)
+    except OSError:
+        JEV = None
 
 
 def main():
