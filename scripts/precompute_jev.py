@@ -281,20 +281,31 @@ def race(g, judge, pool, start, target, mode, max_hops, cap):
     return {"path": [g.ids[x] for x in path], "score": scores, "reached": path[-1] == target}
 
 
-def random_pool(g, mode, size, seed):
-    """Pairs drawn as the game's random puzzles are: real opinions 3 to 5 hops apart under the mode."""
+def notable_targets(g, min_views):
+    """Graph indexes of cases whose Wikipedia article is read at least min_views times a year (scripts/notoriety.py)."""
+    path = os.path.join(DOCS_DATA, "notable.json")
+    if not os.path.exists(path):
+        return None
+    cases = json.load(open(path, encoding="utf-8"))["cases"]
+    return [g.by_cl[cl] for cl, views, _ in cases if views >= min_views and cl in g.by_cl and g.real[g.by_cl[cl]]]
+
+
+def random_pool(g, mode, size, seed, targets=None, hops=(2, 3)):
+    """Pairs for the random row: a notable target (any real opinion when no notable list exists) and a start
+    `hops` away under the mode. The reverse search from the target finds starts in the mode's direction."""
     rng = random.Random(f"jev-pool:{seed}:{mode}")
     eligible = [i for i in range(g.n) if g.real[i]]
+    reverse = {"any": "any", "back": "forward", "forward": "back"}[mode]
     out, seen = [], set()
     for _ in range(size * 50):
         if len(out) >= size:
             break
-        start = rng.choice(eligible)
-        dist = g.bfs(start, mode, 5)
-        cands = sorted(t for t, d in dist.items() if 3 <= d <= 5 and g.real[t])
+        target = rng.choice(targets or eligible)
+        dist = g.bfs(target, reverse, hops[1])
+        cands = sorted(s for s, d in dist.items() if hops[0] <= d <= hops[1] and g.real[s])
         if not cands:
             continue
-        target = rng.choice(cands)
+        start = rng.choice(cands)
         if (start, target) not in seen:
             seen.add((start, target))
             out.append((start, target))
@@ -305,6 +316,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--modes", default=",".join(MODES), help="comma-separated: any,back,forward")
     ap.add_argument("--pool", type=int, default=20, help="random pairs per mode (default 20)")
+    ap.add_argument("--min-views", type=int, default=5000, help="random targets: Wikipedia views per year at least this (default 5000)")
+    ap.add_argument("--hops", default="2-3", help="random pairs: shortest path range under the mode (default 2-3)")
     ap.add_argument("--max-hops", type=int, default=12, help="Jev gives up after this many hops (default 12)")
     ap.add_argument("--cap", type=int, default=150, help="most candidates judged per hop (default 150)")
     ap.add_argument("--workers", type=int, default=6, help="concurrent Jev calls (TypeSafe 429s past about 8)")
@@ -330,6 +343,9 @@ def main():
     routes = {k: v for k, v in prev.get("routes", {}).items() if k.split(":")[0] not in modes}
     pool_out = {m: v for m, v in prev.get("pool", {}).items() if m not in modes}
 
+    targets = notable_targets(g, args.min_views)
+    hops = tuple(int(x) for x in args.hops.split("-"))
+    log(f"random targets: {len(targets) if targets else 'any real opinion (no notable.json)'}, {hops[0]} to {hops[1]} hops")
     jobs = []
     for mode in modes:
         for s in starters:
@@ -337,7 +353,7 @@ def main():
                 continue
             older, newer = s["older"]["id"], s["newer"]["id"]  # graph indexes, as in app/static-api.js
             jobs.append((mode, *((newer, older) if mode == "back" else (older, newer))))
-        pairs = random_pool(g, mode, args.pool, 1)
+        pairs = random_pool(g, mode, args.pool, 1, targets, hops)
         pool_out[mode] = [f"{g.ids[a]}-{g.ids[b]}" for a, b in pairs]
         jobs += [(mode, a, b) for a, b in pairs]
 

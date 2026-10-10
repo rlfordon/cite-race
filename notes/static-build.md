@@ -35,6 +35,7 @@ node scripts/static_smoke.mjs http://127.0.0.1:8777/    # optional 2nd arg: a di
 | `docs/data/graph.json` | 7.72 MB | 1.98 MB |
 | `docs/data/starters.json` | 15 KB | 3 KB |
 | `docs/data/jev.json` | 19 KB | 6 KB |
+| `docs/data/notable.json` | 129 KB | 50 KB |
 | `docs/index.html` | 36 KB | 11 KB |
 | `docs/static-api.js` | 18 KB | 7 KB |
 

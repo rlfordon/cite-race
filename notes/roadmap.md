@@ -11,6 +11,8 @@ date. Anything said in a session and never written down belongs here as soon as 
 - 2026-10-09 Docket start screen (one click to play), reporter page with pagination, find in opinion, hover syllabus cards,
   target peek dialog, chronology ladder with Jev revealed a hop behind, three direction modes, 26 curated starters.
 - 2026-10-09 Phone layout: pinned bar, citator and trail as bottom sheets, tap-to-preview before a hop.
+- 2026-10-10 Random puzzles draw notable targets (Wikipedia pageviews via `scripts/notoriety.py`, `docs/data/notable.json`)
+  2 to 3 hops from the start, after playtesters found random pairs between obscure cases too hard.
 - 2026-10-10 Jev precomputed with TypeSafe (`scripts/precompute_jev.py`, model jev-1.13.0) and replayed from
   `docs/data/jev.json`; random draws come from the pool Jev has raced. First run: 136 routes, 76 reached, 15,647 calls,
   about $0.60, 8 minutes at 6 workers.
