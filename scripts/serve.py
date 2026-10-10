@@ -113,6 +113,11 @@ def shortest_path(a, b, mode):
 
 
 # ----------------------------------------------------------------------------- API
+def par_for(shortest):
+    """Shortest + 2, except a one-hop warm-up, whose par is the hop itself."""
+    return 1 if shortest == 1 else shortest + 2
+
+
 def api_puzzle(seed, mode):
     rng = random.Random(f"{seed}:{mode}" if mode != "any" else seed)
     for _ in range(500):
@@ -124,7 +129,7 @@ def api_puzzle(seed, mode):
         target = rng.choice(cands)
         shortest = dist[target]
         return {"seed": seed, "mode": mode, "start": node_obj(start), "target": node_obj(target),
-                "shortest": shortest, "par": shortest + 2}
+                "shortest": shortest, "par": par_for(shortest)}
     return None
 
 
@@ -151,7 +156,7 @@ def api_starters(mode):
         older, newer = s["older"], s["newer"]
         start, target = (newer, older) if mode == "back" else (older, newer)
         out.append({"group": s["group"], "theme": s["theme"], "start": start, "target": target,
-                    "shortest": d, "par": d + 2, "mode": mode, "seed": 0, "pair": f"{start['id']}-{target['id']}"})
+                    "shortest": d, "par": par_for(d), "mode": mode, "seed": 0, "pair": f"{start['id']}-{target['id']}"})
     return out
 
 
@@ -166,7 +171,7 @@ def api_pair_puzzle(pair, mode):
     if path is None:
         raise ApiError(404, "no path between that pair in this mode")
     d = len(path) - 1
-    return {"seed": 0, "mode": mode, "pair": pair, "start": node_obj(a), "target": node_obj(b), "shortest": d, "par": d + 2}
+    return {"seed": 0, "mode": mode, "pair": pair, "start": node_obj(a), "target": node_obj(b), "shortest": d, "par": par_for(d)}
 
 
 def api_path(a, b, mode):
@@ -181,6 +186,8 @@ def api_opponent(seed, at, target, visited, mode):
     cands = sorted(c for c in neighbours(at, mode) if c not in visited and c != at)
     if not cands:
         return {"move": None, "note": "stand-in: no unvisited neighbour"}
+    if target in cands:
+        return {"move": node_obj(target), "note": "stand-in (target in reach)"}
     dist = dist_to_target(target, mode)
     here = dist.get(at)
     closer = [c for c in cands if here is not None and dist.get(c) == here - 1]

@@ -46,7 +46,7 @@ for (const mode of ['any', 'back', 'forward']) {
 // starters
 const st = await api.call('/api/starters?mode=any');
 check('starters any has 26 entries', st.length === 26, `${st.length}`);
-check('starters entries are shaped', st.every(s => isNode(s.start) && isNode(s.target) && s.pair === `${s.start.id}-${s.target.id}` && s.par === s.shortest + 2 && s.mode === 'any' && s.seed === 0 && s.group && s.theme));
+check('starters entries are shaped', st.every(s => isNode(s.start) && isNode(s.target) && s.pair === `${s.start.id}-${s.target.id}` && s.par === (s.shortest === 1 ? 1 : s.shortest + 2) && s.mode === 'any' && s.seed === 0 && s.group && s.theme));
 for (const mode of ['back', 'forward']) {
   const l = await api.call(`/api/starters?mode=${mode}`);
   check(`starters ${mode} orient start/target`, l.every(s => mode === 'back' ? s.start.year >= s.target.year : s.start.year <= s.target.year), `${l.length} entries`);

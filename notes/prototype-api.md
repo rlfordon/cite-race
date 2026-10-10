@@ -19,7 +19,7 @@ Local server: `python -I scripts/serve.py` on http://127.0.0.1:8765. Serves `app
   `cited_by` = forward neighbours (SCOTUS cases citing this one), sorted by `cited_all` desc, all of them (max is a few hundred). Boilerplate hubs excluded. Client filters by year and word.
 - `GET /api/path?from=<id>&to=<id>&mode=<any|back|forward>` → `{ "length": 4, "path": [node...] }` BFS respecting the mode (undirected for `any`, directed for the others), or `{ "length": null }`.
 - `GET /api/opponent?puzzle=<seed>&at=<id>&target=<id>&visited=<id,id,...>&mode=<any|back|forward>` → (candidate neighbours restricted by mode) `{ "move": node, "note": "stand-in" }`
-  Stand-in for Jev until the typed-judgment version is wired: with probability 0.6 choose the neighbour (either direction) that is one step closer to the target by BFS, otherwise choose a random neighbour among the 10 most-cited. Never revisit `visited`. Deterministic per (seed, at).
+  Stand-in for Jev until the typed-judgment version is wired: if the target is an unvisited neighbour, take it; otherwise with probability 0.6 choose the neighbour (either direction) that is one step closer to the target by BFS, otherwise choose a random neighbour among the 10 most-cited. Never revisit `visited`. Deterministic per (seed, at).
 
 ## Text source
 CAP HTML from `data/cap/raw/us/<vol>.zip` → `html/<path>.html`, joined to CourtListener nodes on `us_cite` (see `data/cap/scotus_nodes.csv`, `data/cap/scotus_alias_sct_to_us.csv`). Post-2020 cases have no text in the prototype: `has_text: false`, and they are excluded from puzzles but may appear in lists (render them unclickable with a note).

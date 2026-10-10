@@ -31,6 +31,8 @@
     };
   }
   const rngFor = key => mulberry32(hash32(String(key)));
+  // A one-hop warm-up has nothing to lose a stroke on, so its par is the hop itself.
+  const parFor = shortest => (shortest === 1 ? 1 : shortest + 2);
   const choice = (rng, arr) => arr[Math.floor(rng() * arr.length)];
 
   // ---------------------------------------------------------------- errors
@@ -178,7 +180,7 @@
       for (let t = 0; t < G.n; t++) if (dist[t] >= 3 && dist[t] <= 5 && G.real[t]) cands.push(t);
       if (!cands.length) continue;
       const target = choice(rng, cands), shortest = dist[target];
-      return { seed, mode, start: nodeObj(start), target: nodeObj(target), shortest, par: shortest + 2 };
+      return { seed, mode, start: nodeObj(start), target: nodeObj(target), shortest, par: parFor(shortest) };
     }
     throw new ApiError(500, 'could not find a puzzle for this seed');
   }
@@ -190,7 +192,7 @@
       if (d == null) continue;
       const older = nodeObj(s.older.id), newer = nodeObj(s.newer.id);
       const [start, target] = mode === 'back' ? [newer, older] : [older, newer];
-      out.push({ group: s.group, theme: s.theme, start, target, shortest: d, par: d + 2, mode, seed: 0, pair: `${start.id}-${target.id}` });
+      out.push({ group: s.group, theme: s.theme, start, target, shortest: d, par: parFor(d), mode, seed: 0, pair: `${start.id}-${target.id}` });
     }
     return out;
   }
@@ -203,7 +205,7 @@
     const path = shortestPath(a, b, mode);
     if (!path) throw new ApiError(404, 'no path between that pair in this mode');
     const d = path.length - 1;
-    return { seed: 0, mode, pair, start: nodeObj(a), target: nodeObj(b), shortest: d, par: d + 2 };
+    return { seed: 0, mode, pair, start: nodeObj(a), target: nodeObj(b), shortest: d, par: parFor(d) };
   }
 
   function apiPath(a, b, mode) {
@@ -216,6 +218,7 @@
     const rng = rngFor(`${seed}:${G.ids[at]}:${mode}`);
     const cands = Array.from(neighbours(at, mode)).filter(c => c !== at && !visited.has(c)).sort((x, y) => x - y);
     if (!cands.length) return { move: null, note: 'stand-in: no unvisited neighbour' };
+    if (cands.includes(target)) return { move: nodeObj(target), note: 'stand-in (target in reach)' };
     const dist = distToTarget(target, mode), here = dist[at];
     const closer = here >= 0 ? cands.filter(c => dist[c] === here - 1) : [];
     const roll = rng();
