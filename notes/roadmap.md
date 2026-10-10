@@ -17,30 +17,30 @@ date. Anything said in a session and never written down belongs here as soon as 
   `docs/data/jev.json`; random draws come from the pool Jev has raced. First run: 136 routes, 76 reached, 15,647 calls,
   about $0.60, 8 minutes at 6 workers.
 
-## Now: judge Jev and settle par
+## Now: next steps (decided 2026-10-10, in order)
 
-The first run says the syllabus-only judgment is good on the canon and weak on random pairs:
+Where things stand: Jev's routes and the notable-target random pool are live on the site (pushed 2026-10-10). Jev on
+either-direction puzzles reaches 25 of 26 starters and 29 of 30 random pairs but wanders on about a third of the
+random ones; in the directed modes it reaches 16 and 19 of 25 starters and only 10 and 8 of 30 random pairs. Its chosen
+hops score a mean of 1.6 on the 0 to 4 scale: a syllabus says what a case is about, not where it leads.
 
-| mode | starters reached | random pairs reached | note |
-|---|---|---|---|
-| any | 25 of 26 | 9 of 20 | 19 starters at the shortest path |
-| back | 16 of 25 | 2 of 20 | gives up on 8 starters, mostly from Carpenter and Daubert |
-| forward | 19 of 25 | 5 of 20 | |
-
-Jev's chosen hops score a mean of 1.6 on the 0 to 4 scale, so it is mostly picking "same broad field" cases: the syllabus
-of a candidate rarely says which way it leads. In the directed modes the lists are long and one wrong pick strands it.
-
-1. Play a few starters and random puzzles against the real routes on the live site. Decide whether a 12-hop wander is
-   fun to race or whether Jev should give up sooner.
-2. Par as Jev's score (decided 2026-10-09, not built). The docket's par column becomes Jev's hop count, with a fallback
-   when Jev did not finish: shortest plus two, or "Jev did not finish" shown as par 12. Needs a rule for the random row,
-   whose Jev result is known too since the pool is fixed.
-3. Store every candidate's score per hop, not only the chosen one, so the replay can show Jev's uncertainty strip (where
-   it hesitated and where it was sure; the "machine assessment" language from the standing rules).
-4. Try the question as a Choice over the candidate list instead of a Score per candidate, which is what the 2026-10-09
-   session proposed: relative judgments are the strong kind. Cheaper too (one call per hop instead of up to 150).
-5. Rerun whenever the graph or the starters change (routes are keyed by CourtListener ids). Grow `--pool` when 20 random
-   puzzles per mode start to repeat. The cache in `data/jev/` means a rerun only pays for new questions.
+1. Silent playtest: two students on a starter and a back-mode puzzle against the real routes, nobody speaking.
+2. Jev gives up at about shortest + 3 instead of 12 hops, and the ladder prints "Jev gave up" on that row. The end
+   record shows three numbers: your hops, Jev's, the shortest. (Research note: a ghost far behind is dead weight.)
+3. Par as Jev's score on the docket (decided 2026-10-09), with shortest + 2 where Jev did not finish.
+4. Backtracking costs a hop (the research answered the open question: charge, do not ban).
+5. A true random row stays on the docket, labelled as the expert option, drawing from all real opinions 3 to 5 hops
+   apart as before; the default random row draws from the notable pool. Jev needs a pool for the expert row too, or
+   it plays the stand-in there.
+6. Share string in string-cite form, and puzzle URLs (`?from=&to=&mode=`) so a class can be given one link.
+7. Post-2020 opinion text from the CourtListener API (one request per cluster, under a thousand; needs
+   `COURTLISTENER_API_TOKEN` in `.env`): fetch once, ship under `docs/`, make those nodes puzzle-eligible, rerun the
+   notoriety match so Dobbs, Bostock, Bruen, SFFA and Loper Bright can be targets, rerun Jev's pool. The bulk opinions
+   dump (55 GB, streamed) is the keyless alternative and the route to self-hosting all Supreme Court text if the
+   archive ever closes.
+8. Store every candidate's score per hop so the replay can show Jev's hesitation (thin dash where the top two were
+   close, bold where it was sure; runner-up named on hover).
+9. Rerun Jev whenever the graph, the starters or the notable list change; grow `--pool` when puzzles repeat.
 
 ## Next: citing-sentence contexts (one build, two uses) and Jev levels
 
