@@ -16,6 +16,10 @@ python -I scripts/build_static.py        # ~3 s; needs data/prototype/index.pick
 Writes `docs/data/graph.json`, `docs/data/starters.json`, `docs/index.html`, `docs/static-api.js`, `docs/.nojekyll`.
 Rerun after changing `app/index.html`, `app/static-api.js`, `data/prototype/starters.json` or the index.
 
+`docs/data/jev.json` (Jev's precomputed routes) is built separately by `python scripts/precompute_jev.py`,
+which needs `TYPESAFE_API_KEY` in `.env`; see `notes/design-decisions.md`. Rerun it after the graph or
+starters change, since routes are keyed by CourtListener cluster ids and the random pool is drawn from the graph.
+
 Smoke test (graph, puzzles, paths, opponent, a live archive fetch and the error codes):
 
 ```
@@ -30,6 +34,7 @@ node scripts/static_smoke.mjs http://127.0.0.1:8777/    # optional 2nd arg: a di
 |---|---|---|
 | `docs/data/graph.json` | 7.72 MB | 1.98 MB |
 | `docs/data/starters.json` | 15 KB | 3 KB |
+| `docs/data/jev.json` | 19 KB | 6 KB |
 | `docs/index.html` | 36 KB | 11 KB |
 | `docs/static-api.js` | 18 KB | 7 KB |
 

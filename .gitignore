@@ -1,3 +1,5 @@
+# API keys
+.env
 # Bulk data and derived caches (gigabytes); the static build in docs/ is what ships.
 /data/
 !/data/prototype/starters.json

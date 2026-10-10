@@ -16,7 +16,8 @@ static.case.law. Jev's answers and the case summaries are cached under data/jev/
 only asks what it has not asked before.
 
   pip install typesafe-sdk
-  TYPESAFE_API_KEY=... python scripts/precompute_jev.py              # starters + 20 random pairs per mode
+  echo TYPESAFE_API_KEY=... > .env                                   # or set it in the environment; .env is git-ignored
+  python scripts/precompute_jev.py                                   # starters + 20 random pairs per mode
   python scripts/precompute_jev.py --pool 50 --modes any --workers 6
   python scripts/precompute_jev.py --fake                            # no key: word-overlap stand-in, to test the plumbing
 """
@@ -40,6 +41,19 @@ DOCS_DATA = os.path.join(ROOT, "docs", "data")
 CACHE_DIR = os.path.join(ROOT, "data", "jev")
 ARCHIVE = "https://static.case.law"
 MODES = ("any", "back", "forward")
+
+
+def load_dotenv():
+    """KEY=value lines from the repo's .env into the environment, without overriding what is already set."""
+    path = os.path.join(ROOT, ".env")
+    if not os.path.exists(path):
+        return
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip().strip("'\""))
 
 QUESTION = ("Two U.S. Supreme Court cases, each given by name, year and the start of its syllabus. "
             "How closely related are the legal issues the two cases decide?")
@@ -294,11 +308,14 @@ def main():
     ap.add_argument("--max-hops", type=int, default=12, help="Jev gives up after this many hops (default 12)")
     ap.add_argument("--cap", type=int, default=150, help="most candidates judged per hop (default 150)")
     ap.add_argument("--workers", type=int, default=6, help="concurrent Jev calls (TypeSafe 429s past about 8)")
-    ap.add_argument("--model", default=None, help="Jev model; pin it once happy (default: the SDK's jev-latest)")
+    ap.add_argument("--model", default="jev-1.13.0", help="Jev model (default jev-1.13.0, the first run's; pinned so reruns replay the same Jev)")
     ap.add_argument("--no-fetch", action="store_true", help="never fetch text from static.case.law")
     ap.add_argument("--fake", action="store_true", help="word-overlap stand-in instead of Jev; writes to --out only")
     ap.add_argument("--out", default=os.path.join(DOCS_DATA, "jev.json"))
     args = ap.parse_args()
+    load_dotenv()
+    if not args.fake and not os.environ.get("TYPESAFE_API_KEY"):
+        raise SystemExit("TYPESAFE_API_KEY is not set: put it in .env or the environment, or pass --fake")
     modes = [m for m in args.modes.split(",") if m]
     if any(m not in MODES for m in modes):
         raise SystemExit(f"--modes must be from {MODES}")

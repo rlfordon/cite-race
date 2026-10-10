@@ -15,7 +15,7 @@ python -I scripts/serve.py        # local server with the full data (needs data/
 python -I scripts/build_static.py # rebuild docs/ for Pages
 ```
 
-The `data/` directory (CourtListener and CAP bulk pulls, about 10 GB) is not committed. `notes/` records the data pipeline, design decisions, and the API contract.
+The `data/` directory (CourtListener and CAP bulk pulls, about 10 GB) is not committed. `notes/` records the data pipeline, design decisions, and the API contract. `notes/roadmap.md` lists what has been built and what comes next.
 
 ## Data
 
